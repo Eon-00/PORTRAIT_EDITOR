@@ -659,6 +659,9 @@
                     <input type="file" id="bg-image-uploader" accept="image/*">
                 </div>
                 <div class="input-group">
+                    <button id="clear-bg-image-btn" class="clear-all-btn" style="background-color: #6c757d; padding: 8px 12px; font-size: 0.85em;">배경 이미지 지우기</button>
+                </div>
+                <div class="input-group">
                     <label>베이스 타입</label>
                     <select id="bg-image-base-type" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
                         <option value="color">색상</option>
@@ -1257,6 +1260,9 @@
                 <label for="logo-uploader">로고 이미지</label>
                 <input type="file" id="logo-uploader" accept="image/*">
             </div>
+            <div class="input-group">
+                <button id="clear-logo-btn" class="clear-all-btn" style="background-color: #6c757d; padding: 8px 12px; font-size: 0.85em;">로고 이미지 지우기</button>
+            </div>
             <div class="input-group-linked">
                 <label for="logo-x">X</label>
                 <input type="range" id="logo-x-slider" value="20" min="0" max="2000">
@@ -1509,15 +1515,87 @@
 
         // ==================== 이벤트 리스너 ====================
 
+        // 캔버스 크기에 따라 장식 요소들의 최대값 업데이트
+        function updateDecorationMaxValues() {
+            const maxWidth = sheetConfig.sheet.width;
+            const maxHeight = sheetConfig.sheet.height;
+
+            // 캐릭터 이름 X, Y
+            ['name-x', 'name-x-slider'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.max = maxWidth;
+                    if (parseFloat(el.value) > maxWidth) el.value = maxWidth;
+                }
+            });
+            ['name-y', 'name-y-slider'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.max = maxHeight;
+                    if (parseFloat(el.value) > maxHeight) el.value = maxHeight;
+                }
+            });
+
+            // 캐릭터 설명 X, Y
+            ['desc-x', 'desc-x-slider'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.max = maxWidth;
+                    if (parseFloat(el.value) > maxWidth) el.value = maxWidth;
+                }
+            });
+            ['desc-y', 'desc-y-slider'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.max = maxHeight;
+                    if (parseFloat(el.value) > maxHeight) el.value = maxHeight;
+                }
+            });
+
+            // 워터마크 X, Y
+            ['watermark-x', 'watermark-x-slider'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.max = maxWidth;
+                    if (parseFloat(el.value) > maxWidth) el.value = maxWidth;
+                }
+            });
+            ['watermark-y', 'watermark-y-slider'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.max = maxHeight;
+                    if (parseFloat(el.value) > maxHeight) el.value = maxHeight;
+                }
+            });
+
+            // 로고 X, Y
+            ['logo-x', 'logo-x-slider'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.max = maxWidth;
+                    if (parseFloat(el.value) > maxWidth) el.value = maxWidth;
+                }
+            });
+            ['logo-y', 'logo-y-slider'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.max = maxHeight;
+                    if (parseFloat(el.value) > maxHeight) el.value = maxHeight;
+                }
+            });
+        }
+
         // 시트 크기 조정
         linkSliderToNumber('sheet-width', 'sheet-width-slider', (value) => {
             sheetConfig.sheet.width = value;
+            updateDecorationMaxValues();
             constrainGridPosition();
             renderPreview();
         });
-        
+
         linkSliderToNumber('sheet-height', 'sheet-height-slider', (value) => {
             sheetConfig.sheet.height = value;
+            updateDecorationMaxValues();
             constrainGridPosition();
             renderPreview();
         });
@@ -2466,6 +2544,20 @@
         // 전체 초기화 버튼 이벤트
         document.getElementById('clear-all-images-btn').addEventListener('click', clearAllImages);
 
+        // 배경 이미지 지우기 버튼 이벤트
+        document.getElementById('clear-bg-image-btn').addEventListener('click', () => {
+            sheetConfig.decoration.background.imageUrl = '';
+            document.getElementById('bg-image-uploader').value = '';
+            renderPreview();
+        });
+
+        // 로고 이미지 지우기 버튼 이벤트
+        document.getElementById('clear-logo-btn').addEventListener('click', () => {
+            sheetConfig.decoration.logo.url = '';
+            document.getElementById('logo-uploader').value = '';
+            renderPreview();
+        });
+
         document.getElementById('face-grid-uploader').addEventListener('change', (e) => {
             const files = Array.from(e.target.files);
             if (files.length > 0) {
@@ -2890,6 +2982,10 @@
             const originalBoxShadow = target.style.boxShadow;
             const originalTransform = target.style.transform;
 
+            // 배경 이미지 컨테이너 원본 상태 저장
+            const bgImgContainer = document.getElementById('bg-image-container');
+            const originalBgImgDisplay = bgImgContainer ? bgImgContainer.style.display : '';
+
             // 텍스트 요소들의 원본 스타일 저장
             const textElements = target.querySelectorAll('.decoration-element');
             const originalStyles = [];
@@ -2908,59 +3004,50 @@
             target.style.border = 'none';
             target.style.boxShadow = 'none';
 
-            // 배경 설정 (디버깅 로그 추가)
-            console.log('=== 다운로드 배경 설정 시작 ===');
-            console.log('decoration.enabled:', sheetConfig.decoration.enabled);
-
-            // 먼저 배경 이미지 컨테이너 숨기기
-            const bgImgContainer = document.getElementById('bg-image-container');
-            if (bgImgContainer) {
-                bgImgContainer.style.display = 'none';
-            }
-
+            // 배경 설정
             if (sheetConfig.decoration.enabled) {
                 const bgType = sheetConfig.decoration.background.type;
-                console.log('배경 타입:', bgType);
 
                 if (bgType === 'transparent') {
                     target.style.backgroundImage = 'none';
                     target.style.backgroundColor = 'transparent';
+                    if (bgImgContainer) {
+                        bgImgContainer.style.display = 'none';
+                    }
                 } else if (bgType === 'color') {
-                    console.log('색상 타입:', sheetConfig.decoration.background.colorType);
                     if (sheetConfig.decoration.background.colorType === 'gradient') {
                         const gradientCSS = `linear-gradient(to bottom, ${sheetConfig.decoration.background.colorGradientStart}, ${sheetConfig.decoration.background.colorGradientEnd})`;
-                        console.log('그라데이션 CSS:', gradientCSS);
-                        // backgroundImage를 그라데이션으로 설정
                         target.style.backgroundImage = gradientCSS;
                         target.style.backgroundColor = 'transparent';
                     } else {
-                        console.log('단색 배경:', sheetConfig.decoration.background.color);
                         target.style.backgroundImage = 'none';
                         target.style.backgroundColor = sheetConfig.decoration.background.color;
                     }
+                    if (bgImgContainer) {
+                        bgImgContainer.style.display = 'none';
+                    }
                 } else if (bgType === 'image' && sheetConfig.decoration.background.imageUrl) {
-                    console.log('이미지 배경 베이스 타입:', sheetConfig.decoration.background.baseType);
+                    // 이미지 배경의 경우 베이스 색상/그라데이션 적용
                     if (sheetConfig.decoration.background.baseType === 'gradient') {
                         const gradientCSS = `linear-gradient(to bottom, ${sheetConfig.decoration.background.gradientStart}, ${sheetConfig.decoration.background.gradientEnd})`;
-                        console.log('이미지 배경용 그라데이션 CSS:', gradientCSS);
                         target.style.backgroundImage = gradientCSS;
                         target.style.backgroundColor = 'transparent';
                     } else {
-                        console.log('이미지 배경용 단색:', sheetConfig.decoration.background.baseColor);
                         target.style.backgroundImage = 'none';
                         target.style.backgroundColor = sheetConfig.decoration.background.baseColor;
+                    }
+                    // 배경 이미지 컨테이너는 켜진 상태로 유지 (html2canvas가 캡처)
+                    if (bgImgContainer) {
+                        bgImgContainer.style.display = 'block';
                     }
                 }
             } else {
                 target.style.backgroundImage = 'none';
                 target.style.backgroundColor = 'white';
+                if (bgImgContainer) {
+                    bgImgContainer.style.display = 'none';
+                }
             }
-
-            console.log('최종 backgroundColor:', target.style.backgroundColor);
-            console.log('최종 backgroundImage:', target.style.backgroundImage);
-            console.log('computed backgroundColor:', window.getComputedStyle(target).backgroundColor);
-            console.log('computed backgroundImage:', window.getComputedStyle(target).backgroundImage);
-            console.log('=== 다운로드 배경 설정 완료 ===');
 
             html2canvas(target, {
                 backgroundColor: null,
@@ -2978,6 +3065,11 @@
                 target.style.transform = originalTransform;
                 target.style.border = originalBorder;
                 target.style.boxShadow = originalBoxShadow;
+
+                // 배경 이미지 컨테이너 복원
+                if (bgImgContainer) {
+                    bgImgContainer.style.display = originalBgImgDisplay;
+                }
 
                 // 텍스트 요소들 원본 스타일 복원
                 originalStyles.forEach(item => {
@@ -3007,6 +3099,11 @@
                 target.style.border = originalBorder;
                 target.style.boxShadow = originalBoxShadow;
 
+                // 배경 이미지 컨테이너 복원
+                if (bgImgContainer) {
+                    bgImgContainer.style.display = originalBgImgDisplay;
+                }
+
                 originalStyles.forEach(item => {
                     item.element.style.background = item.background;
                     item.element.style.webkitBackgroundClip = item.webkitBackgroundClip;
@@ -3026,6 +3123,9 @@
                 sheetConfig.decoration.globalFont.fontFamily = defaultFont;
             }
         }
+
+        // 장식 요소들의 최대값 초기 설정
+        updateDecorationMaxValues();
 
         renderPreview();
         inputs.forEach(input => {
