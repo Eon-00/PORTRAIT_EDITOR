@@ -1,0 +1,3220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>캐릭터 포트레이트 에디터</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            display: grid;
+            grid-template-columns: 400px 1fr auto;
+            gap: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .control-panel {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 0;
+            overflow-y: auto;
+            height: calc(100vh - 40px);
+        }
+
+        .decoration-panel {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 0;
+            overflow-y: auto;
+            height: calc(100vh - 40px);
+            width: 350px;
+            display: block;
+        }
+        .decoration-panel.inactive {
+            display: none;
+        }
+
+        .section-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;box-shadow
+            : 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .control-panel h3 {
+            margin: 0 0 16px 0;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9em;
+            color: #495057;
+        }
+        
+        .input-group-linked {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .input-group-linked:last-child {
+            margin-bottom: 0;
+        }
+        .input-group-linked label {
+            flex-shrink: 0;
+            width: 90px;
+            margin: 0;
+            font-weight: 500;
+            font-size: 0.9em;
+            color: #495057;
+        }
+        .input-group-linked input[type="range"] {
+            flex-grow: 1;
+            margin: 0;
+        }
+        .input-group-linked input[type="number"] {
+            width: 70px;
+            padding: 6px 8px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        .input-group-linked input[type="number"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .input-group input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 0.85em;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        .input-group input[type="file"]:hover {
+            border-color: #007bff;
+            background-color: #e7f1ff;
+        }
+
+        .coordinate-inputs {
+            display: block;
+        }
+        .coordinate-inputs .input-group-linked {
+            margin-bottom: 10px;
+        }
+        .coordinate-inputs .input-group-linked label {
+             width: 80px;
+        }
+        .coordinate-inputs .input-group-linked input[type="number"] {
+            width: 70px;
+        }
+
+        #download-btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 1em;
+            font-weight: 600;
+            color: white;
+            background:   #0056b3;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;        
+        }
+        #download-btn:hover {
+            transform: translateY(-2px);        
+        }
+        #download-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* 체크박스 그룹 스타일 */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .checkbox-group label {
+            margin: 0 0 0 10px;
+            font-weight: 500;
+            font-size: 0.9em;
+            color: #495057;
+            cursor: pointer;
+        }
+
+        /* 이미지 썸네일 목록 스타일 */
+        .image-preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .image-preview-item {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .image-preview-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-preview-item .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(220, 53, 69, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 2;
+        }
+        .image-preview-item .remove-btn:hover {
+            background-color: #dc3545;
+            transform: scale(1.1);
+        }
+        .image-preview-item .arrow-buttons {
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            z-index: 2;
+        }
+        .image-preview-item .arrow-btn {
+            width: 24px;
+            height: 24px;
+            background-color: rgba(0, 123, 255, 0.9);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .image-preview-item .arrow-btn:hover {
+            background-color: #007bff;
+            transform: scale(1.1);
+        }
+        .image-preview-item .arrow-btn:disabled {
+            background-color: rgba(108, 117, 125, 0.5);
+            cursor: not-allowed;
+        }
+        .image-preview-item .arrow-btn:disabled:hover {
+            transform: none;
+        }
+        .clear-all-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            color: white;
+            background-color: #dc3545;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;            
+        }
+        .clear-all-btn:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);            
+        }
+        .clear-all-btn:active {
+            transform: translateY(0);
+        }
+
+        .preview-area {
+            background-color: #333;
+            border-radius: 8px;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 40px);
+            position: relative;
+        }
+
+        #sheet-canvas {
+            background-color: white; /* 편집 시에는 흰색으로 보임 */
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            border: 1px dashed #aaa;
+            transform-origin: center;
+            max-width: none !important; /* 가로 크기 제한 제거 */
+            min-width: 0; /* 최소 너비 제한 제거 */
+            flex-shrink: 0; /* flex 축소 방지 */
+        }
+
+        #bg-image-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            display: none;
+        }
+
+        #base-image-container {
+            position: absolute;
+            transform-origin: top left;
+            z-index: 1;
+        }
+        #base-image {
+            display: block;
+            width: auto;
+            height: auto;
+        }
+        #base-image:not([src]),
+        #base-image[src=""] {
+            display: none;
+        }
+
+        #grid-container {
+            position: absolute;
+            display: grid;
+            cursor: move;
+            z-index: 5;
+        }
+
+        .face-window {
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .face-window.rounded {
+            border-radius: 10px; /* 예시로 10px */
+        }
+
+        .face-sprite {
+            position: absolute;
+            display: block;
+            width: auto;
+            height: auto;
+            transform-origin: top left;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="control-panel">
+        <div class="section-card" style="background: linear-gradient(135deg, #aa0e0e 0%, #153cbb 100%); padding: 20px; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: white; font-size: 1.5em; font-weight: 700; text-align: center;">캐릭터 포트레이트 에디터</h2>
+        </div>
+
+        <div class="section-card">
+            <h3>이미지 크기 설정</h3>
+            <div class="checkbox-group" style="margin-bottom: 16px;">
+                <input type="checkbox" id="enable-decoration" checked>
+                <label for="enable-decoration">글자 및 배경 꾸미기 활성화</label>
+            </div>
+            <div class="input-group-linked">
+                <label for="sheet-width">가로</label>
+                <input type="range" id="sheet-width-slider" value="1200" min="100" max="4000">
+                <input type="number" id="sheet-width" value="1200" min="100" max="4000">
+            </div>
+            <div class="input-group-linked">
+                <label for="sheet-height">세로</label>
+                <input type="range" id="sheet-height-slider" value="1500" min="100" max="4000">
+                <input type="number" id="sheet-height" value="1500" min="100" max="4000">
+            </div>
+            <div class="input-group-linked">
+                <label for="preview-scale">미리보기 %</label>
+                <input type="range" id="preview-scale-slider" value="50" min="30" max="100">
+                <input type="number" id="preview-scale" value="60" min="30" max="100">
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>전신 이미지</h3>
+            <div class="input-group">
+                <label for="base-image-uploader">이미지 업로드</label>
+                <input type="file" id="base-image-uploader" accept="image/*">
+            </div>
+            <div class="input-group-linked">
+                <label for="base-image-x">X</label>
+                <input type="range" id="base-image-x-slider" value="100" min="-1000" max="3000">
+                <input type="number" id="base-image-x" value="100" min="-1000" max="3000">
+            </div>
+            <div class="input-group-linked">
+                <label for="base-image-y">Y</label>
+                <input type="range" id="base-image-y-slider" value="50" min="-1000" max="3000">
+                <input type="number" id="base-image-y" value="50" min="-1000" max="3000">
+            </div>
+            <div class="input-group-linked">
+                <label for="base-image-scale">크기 %</label>
+                <input type="range" id="base-image-scale-slider" value="100" min="10" max="300">
+                <input type="number" id="base-image-scale" value="100" min="10" max="300">
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>표정 시트 (그리드)</h3>
+            <p style="margin: 0 0 12px 0; color: #6c757d; font-size: 13px;">💡 위치는 마우스 드래그로도 조정할 수 있습니다</p>
+            <div class="input-group">
+                <label for="face-grid-uploader">표정 이미지 업로드 (다중 선택)</label>
+                <input type="file" id="face-grid-uploader" accept="image/*" multiple>
+            </div>
+            <div id="image-preview-list" class="image-preview-container"></div>
+            <div class="input-group-linked">
+                <label for="grid-x">시트 X</label>
+                <input type="range" id="grid-x-slider" value="700" min="0" max="4000">
+                <input type="number" id="grid-x" value="700" min="0" max="4000">
+            </div>
+            <div class="input-group-linked">
+                <label for="grid-y">시트 Y</label>
+                <input type="range" id="grid-y-slider" value="50" min="0" max="4000">
+                <input type="number" id="grid-y" value="50" min="0" max="4000">
+            </div>
+            <div class="input-group-linked">
+                <label for="grid-columns">열 개수</label>
+                <input type="range" id="grid-columns-slider" value="5" min="1" max="20">
+                <input type="number" id="grid-columns" value="5" min="1" max="20">
+            </div>
+            <div class="input-group-linked">
+                <label for="grid-gap">간격 px</label>
+                <input type="range" id="grid-gap-slider" value="10" min="0" max="100">
+                <input type="number" id="grid-gap" value="10" min="0" max="100">
+            </div>
+            <div class="input-group-linked">
+                <label for="grid-item-scale">이미지 배율 %</label>
+                <input type="range" id="grid-item-scale-slider" value="100" min="10" max="300">
+                <input type="number" id="grid-item-scale" value="100" min="10" max="300">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="round-face-boxes">
+                <label for="round-face-boxes">표정 박스 모서리 둥글게</label>
+            </div>
+
+            <h3 style="margin-top: 24px;">얼굴 영역 (전신 이미지 기준)</h3>
+            <div class="coordinate-inputs">
+                <div class="input-group-linked">
+                    <label for="face-x">X</label>
+                    <input type="range" id="face-x-slider" value="150" min="-500" max="1000">
+                    <input type="number" id="face-x" value="150" min="-500" max="1000">
+                </div>
+                <div class="input-group-linked">
+                    <label for="face-y">Y</label>
+                    <input type="range" id="face-y-slider" value="100" min="-500" max="1000">
+                    <input type="number" id="face-y" value="100" min="-500" max="1000">
+                </div>
+                <div class="input-group-linked">
+                    <label for="face-w">W</label>
+                    <input type="range" id="face-w-slider" value="120" min="10" max="500">
+                    <input type="number" id="face-w" value="120" min="10" max="500">
+                </div>
+                <div class="input-group-linked">
+                    <label for="face-h">H</label>
+                    <input type="range" id="face-h-slider" value="150" min="10" max="500">
+                    <input type="number" id="face-h" value="150" min="10" max="500">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>시트 저장</h3>
+            <div class="input-group">
+                <button id="download-btn">PNG로 다운로드</button>
+            </div>
+        </div>
+
+        <div class="section-card" style="text-align: center; padding: 16px;">
+            <p style="margin: 0; font-size: 0.85em; color: #6c757d; line-height: 1.6;">
+                연연 | JUDGMENT
+            </p>
+            <p style="margin: 8px 0 0 0; font-size: 0.75em; color: #adb5bd;">
+                <a href="https://x.com/EonType00" target="_blank" style="color: #0d6efd; text-decoration: none;">@EonType00</a>
+            </p>
+        </div>
+
+        <div class="section-card">
+            <h3>전체 초기화</h3>
+            <div class="input-group">
+                <button id="clear-all-images-btn" class="clear-all-btn">모든 이미지 초기화</button>
+            </div>
+            <div class="input-group" style="margin-top: 12px;">
+                <button id="reset-settings-btn" class="clear-all-btn" style="background-color: #fd7e14;">설정 초기화</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="preview-area">
+        <div id="sheet-canvas">
+            <div id="bg-image-container"></div>
+            <div id="base-image-container">
+                <img id="base-image" src="" alt="캐릭터 전신">
+                </div>
+            <div id="grid-container">
+                </div>
+        </div>
+    </div>
+
+    <div class="decoration-panel" id="decoration-panel">
+        <div class="section-card">
+            <h3>베이스 폰트 설정</h3>
+            <div class="input-group">
+                <label for="global-font-source">폰트 소스</label>
+                <select id="global-font-source" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                    <option value="select">폰트 선택</option>
+                    <option value="custom">직접 입력</option>
+                </select>
+            </div>
+
+            <div id="global-font-select" class="input-group">
+                <label for="global-font-list">폰트 선택</label>
+                <select id="global-font-list" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                    <optgroup label="English">
+                        <option value="Montserrat">Montserrat (몬세라트)</option>
+                        <option value="Lato">Lato (라토)</option>
+                        <option value="Raleway">Raleway (랠리웨이)</option>
+                        <option value="Oswald">Oswald (오스왈드)</option>
+                        <option value="Merriweather">Merriweather (메리웨더)</option>
+                    </optgroup>
+                    <optgroup label="한국어">
+                        <option value="Noto Sans KR">Noto Sans KR (본고딕)</option>
+                        <option value="Noto Serif KR">Noto Serif KR (본명조)</option>
+                        <option value="Black Han Sans">Black Han Sans (검은고딕)</option>
+                        <option value="Jua">Jua (주아)</option>
+                        <option value="Do Hyeon">Do Hyeon (도현)</option>
+                        <option value="Nanum Gothic">Nanum Gothic (나눔고딕)</option>
+                        <option value="Nanum Myeongjo">Nanum Myeongjo (나눔명조)</option>
+                        <option value="Nanum Pen Script">Nanum Pen Script (나눔손글씨 펜)</option>
+                        <option value="Nanum Brush Script">Nanum Brush Script (나눔손글씨 붓)</option>
+                        <option value="Gamja Flower">Gamja Flower (감자꽃)</option>
+                        <option value="Poor Story">Poor Story (가난한 이야기)</option>
+                        <option value="Gothic A1">Gothic A1 (고딕 A1)</option>
+                        <option value="Sunflower">Sunflower (해바라기)</option>
+                        <option value="Stylish">Stylish (스타일리쉬)</option>
+                        <option value="East Sea Dokdo">East Sea Dokdo (동해 독도)</option>
+                    </optgroup>
+                    <optgroup label="日本語">
+                        <option value="Noto Sans JP">Noto Sans JP (본고딕 일본어)</option>
+                        <option value="Noto Serif JP">Noto Serif JP (본명조 일본어)</option>
+                        <option value="M PLUS Rounded 1c">M PLUS Rounded 1c (엠플러스 둥근)</option>
+                        <option value="Kosugi Maru">Kosugi Maru (코스기 마루)</option>
+                        <option value="Sawarabi Mincho">Sawarabi Mincho (사와라비 명조)</option>
+                    </optgroup>
+                    <optgroup label="中文">
+                        <option value="Noto Sans SC">Noto Sans SC (본고딕 간체)</option>
+                        <option value="Noto Sans TC">Noto Sans TC (본고딕 번체)</option>
+                        <option value="Noto Serif SC">Noto Serif SC (본명조 간체)</option>
+                        <option value="Noto Serif TC">Noto Serif TC (본명조 번체)</option>
+                        <option value="Ma Shan Zheng">Ma Shan Zheng (마산정)</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div id="global-custom-font-input" style="display: none;">
+                <div class="input-group">
+                    <label for="global-font-url">폰트 URL</label>
+                    <input type="text" id="global-font-url" placeholder="https://fonts.googleapis.com/css2?family=..." style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box; font-size: 0.85em;">
+                </div>
+                <div class="input-group">
+                    <label for="global-font-family">폰트 이름</label>
+                    <input type="text" id="global-font-family" placeholder="Noto Sans KR" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <details style="margin-top: 12px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;">
+                <summary style="cursor: pointer; font-weight: 600; color: #495057; font-size: 0.9em; user-select: none;">📖 폰트 직접 입력 가이드</summary>
+                <div style="margin-top: 12px; font-size: 0.85em; color: #495057; line-height: 1.6;">
+                    <p style="margin: 0 0 12px 0; font-weight: 600; color: #212529;">🔤 구글 폰트 (Google Fonts) 사용법:</p>
+                    <ol style="margin: 0 0 16px 0; padding-left: 20px;">
+                        <li style="margin-bottom: 8px;">
+                            <a href="https://fonts.google.com" target="_blank" style="color: #0d6efd; text-decoration: none;">fonts.google.com</a> 접속
+                        </li>
+                        <li style="margin-bottom: 8px;">원하는 폰트 선택 후 "Get font" 클릭</li>
+                        <li style="margin-bottom: 8px;">"Get embed code" 클릭</li>
+                        <li style="margin-bottom: 8px;">
+                            <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">&lt;link&gt;</code> 태그의 <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">href</code> 부분을 복사하여 "폰트 URL"에 입력
+                            <br><span style="color: #6c757d; font-size: 0.9em;">예: https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap</span>
+                        </li>
+                        <li style="margin-bottom: 8px;">
+                            "CSS rules" 부분의 폰트 이름을 "폰트 이름"에 입력
+                            <br><span style="color: #6c757d; font-size: 0.9em;">예: Roboto</span>
+                        </li>
+                    </ol>
+
+                    <p style="margin: 0 0 12px 0; font-weight: 600; color: #212529;">🇰🇷 눈누 폰트 (noonnu.cc) 사용법:</p>
+                    <ol style="margin: 0 0 0 0; padding-left: 20px;">
+                        <li style="margin-bottom: 8px;">
+                            <a href="https://noonnu.cc" target="_blank" style="color: #0d6efd; text-decoration: none;">noonnu.cc</a> 접속
+                        </li>
+                        <li style="margin-bottom: 8px;">원하는 폰트 선택 후 "웹폰트로 사용" 탭 클릭</li>
+                        <li style="margin-bottom: 8px;">
+                            <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">@import</code> 방식의 URL 부분을 복사하여 "폰트 URL"에 입력
+                            <br><span style="color: #6c757d; font-size: 0.9em;">예: https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/Pretendard-Regular.woff</span>
+                        </li>
+                        <li style="margin-bottom: 8px;">
+                            <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">font-family</code> 부분의 폰트 이름을 "폰트 이름"에 입력
+                            <br><span style="color: #6c757d; font-size: 0.9em;">예: Pretendard-Regular</span>
+                        </li>
+                    </ol>
+
+                    <p style="margin: 16px 0 0 0; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; font-size: 0.85em;">
+                        <strong>💡 팁:</strong> 폰트가 적용되지 않으면 URL과 폰트 이름이 정확한지 다시 확인해보세요.
+                    </p>
+                </div>
+            </details>
+
+            <p style="margin: 12px 0 0 0; color: #6c757d; font-size: 12px;">💡 여기서 선택한 폰트가 모든 텍스트에 적용됩니다</p>
+        </div>
+
+        <div class="section-card">
+            <h3>배경 설정</h3>
+            <div class="input-group">
+                <label>배경 타입</label>
+                <select id="bg-type" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                    <option value="transparent">투명</option>
+                    <option value="color">색상</option>
+                    <option value="image">이미지</option>
+                </select>
+            </div>
+            <div id="bg-color-option" style="display: none;">
+                <div class="input-group">
+                    <label>배경 타입</label>
+                    <select id="bg-color-type" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                        <option value="color">색상</option>
+                        <option value="gradient">그라데이션</option>
+                    </select>
+                </div>
+                <div id="bg-color-single-option">
+                    <div class="input-group">
+                        <label for="bg-color">배경 색상</label>
+                        <input type="color" id="bg-color" value="#ffffff" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                    </div>
+                </div>
+                <div id="bg-color-gradient-option" style="display: none;">
+                    <div class="input-group">
+                        <label style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px;">그라데이션 색상 (시작 → 끝)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="color" id="bg-color-gradient-start" value="#ffffff" style="flex: 1; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                            <input type="color" id="bg-color-gradient-end" value="#000000" style="flex: 1; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="bg-image-option" style="display: none;">
+                <div class="input-group">
+                    <label for="bg-image-uploader">배경 이미지</label>
+                    <input type="file" id="bg-image-uploader" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>베이스 타입</label>
+                    <select id="bg-image-base-type" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                        <option value="color">색상</option>
+                        <option value="gradient">그라데이션</option>
+                    </select>
+                </div>
+                <div id="bg-image-base-color-option">
+                    <div class="input-group">
+                        <label for="bg-image-base-color">베이스 색상</label>
+                        <input type="color" id="bg-image-base-color" value="#ffffff" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                    </div>
+                </div>
+                <div id="bg-image-base-gradient-option" style="display: none;">
+                    <div class="input-group">
+                        <label style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px;">그라데이션 색상 (시작 → 끝)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="color" id="bg-image-gradient-start" value="#ffffff" style="flex: 1; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                            <input type="color" id="bg-image-gradient-end" value="#000000" style="flex: 1; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group-linked">
+                    <label for="bg-image-x">X 위치</label>
+                    <input type="range" id="bg-image-x-slider" value="0" min="-500" max="500">
+                    <input type="number" id="bg-image-x" value="0" min="-500" max="500">
+                </div>
+                <div class="input-group-linked">
+                    <label for="bg-image-y">Y 위치</label>
+                    <input type="range" id="bg-image-y-slider" value="0" min="-500" max="500">
+                    <input type="number" id="bg-image-y" value="0" min="-500" max="500">
+                </div>
+                <div class="input-group-linked">
+                    <label for="bg-image-scale">크기 %</label>
+                    <input type="range" id="bg-image-scale-slider" value="100" min="10" max="300">
+                    <input type="number" id="bg-image-scale" value="100" min="10" max="300">
+                </div>
+                <div class="input-group-linked">
+                    <label for="bg-image-opacity">투명도 %</label>
+                    <input type="range" id="bg-image-opacity-slider" value="100" min="0" max="100">
+                    <input type="number" id="bg-image-opacity" value="100" min="0" max="100">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>캐릭터 이름</h3>
+            <div class="input-group">
+                <label for="character-name">텍스트</label>
+                <input type="text" id="character-name" placeholder="캐릭터 이름 입력" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box;">
+            </div>
+
+            <div class="checkbox-group" style="margin-bottom: 12px;">
+                <input type="checkbox" id="name-custom-font">
+                <label for="name-custom-font">개별 폰트 사용</label>
+            </div>
+
+            <div id="name-font-settings" style="display: none;">
+                <div class="input-group">
+                    <label for="name-font-source">폰트 소스</label>
+                    <select id="name-font-source" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                        <option value="select">폰트 선택</option>
+                        <option value="custom">직접 입력</option>
+                    </select>
+                </div>
+
+                <div id="name-font-select" class="input-group">
+                    <label for="name-font-list">폰트 선택</label>
+                    <select id="name-font-list" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                        <optgroup label="English">
+                            <option value="Montserrat">Montserrat (몬세라트)</option>
+                            <option value="Lato">Lato (라토)</option>
+                            <option value="Raleway">Raleway (랠리웨이)</option>
+                            <option value="Oswald">Oswald (오스왈드)</option>
+                            <option value="Merriweather">Merriweather (메리웨더)</option>
+                        </optgroup>
+                        <optgroup label="한국어">
+                            <option value="Noto Sans KR">Noto Sans KR (본고딕)</option>
+                            <option value="Noto Serif KR">Noto Serif KR (본명조)</option>
+                            <option value="Black Han Sans">Black Han Sans (검은고딕)</option>
+                            <option value="Jua">Jua (주아)</option>
+                            <option value="Do Hyeon">Do Hyeon (도현)</option>
+                            <option value="Nanum Gothic">Nanum Gothic (나눔고딕)</option>
+                            <option value="Nanum Myeongjo">Nanum Myeongjo (나눔명조)</option>
+                            <option value="Nanum Pen Script">Nanum Pen Script (나눔손글씨 펜)</option>
+                            <option value="Nanum Brush Script">Nanum Brush Script (나눔손글씨 붓)</option>
+                            <option value="Gamja Flower">Gamja Flower (감자꽃)</option>
+                            <option value="Poor Story">Poor Story (가난한 이야기)</option>
+                            <option value="Gothic A1">Gothic A1 (고딕 A1)</option>
+                            <option value="Sunflower">Sunflower (해바라기)</option>
+                            <option value="Stylish">Stylish (스타일리쉬)</option>
+                            <option value="East Sea Dokdo">East Sea Dokdo (동해 독도)</option>
+                        </optgroup>
+                        <optgroup label="日本語">
+                            <option value="Noto Sans JP">Noto Sans JP (본고딕 일본어)</option>
+                            <option value="Noto Serif JP">Noto Serif JP (본명조 일본어)</option>
+                            <option value="M PLUS Rounded 1c">M PLUS Rounded 1c (엠플러스 둥근)</option>
+                            <option value="Kosugi Maru">Kosugi Maru (코스기 마루)</option>
+                            <option value="Sawarabi Mincho">Sawarabi Mincho (사와라비 명조)</option>
+                        </optgroup>
+                        <optgroup label="中文">
+                            <option value="Noto Sans SC">Noto Sans SC (본고딕 간체)</option>
+                            <option value="Noto Sans TC">Noto Sans TC (본고딕 번체)</option>
+                            <option value="Noto Serif SC">Noto Serif SC (본명조 간체)</option>
+                            <option value="Noto Serif TC">Noto Serif TC (본명조 번체)</option>
+                            <option value="Ma Shan Zheng">Ma Shan Zheng (마산정)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div id="name-custom-font-input" style="display: none;">
+                    <div class="input-group">
+                        <label for="name-font-url">폰트 URL</label>
+                        <input type="text" id="name-font-url" placeholder="https://fonts.googleapis.com/css2?family=..." style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box; font-size: 0.85em;">
+                    </div>
+                    <div class="input-group">
+                        <label for="name-font-family">폰트 이름</label>
+                        <input type="text" id="name-font-family" placeholder="Noto Sans KR" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box;">
+                    </div>
+
+                    <details style="margin-top: 12px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;">
+                        <summary style="cursor: pointer; font-weight: 600; color: #495057; font-size: 0.9em; user-select: none;">📖 폰트 사용 가이드</summary>
+                        <div style="margin-top: 12px; font-size: 0.85em; color: #495057; line-height: 1.6;">
+                            <p style="margin: 0 0 12px 0; font-weight: 600; color: #212529;">🔤 구글 폰트 (Google Fonts) 사용법:</p>
+                            <ol style="margin: 0 0 16px 0; padding-left: 20px;">
+                                <li style="margin-bottom: 8px;">
+                                    <a href="https://fonts.google.com" target="_blank" style="color: #0d6efd; text-decoration: none;">fonts.google.com</a> 접속
+                                </li>
+                                <li style="margin-bottom: 8px;">원하는 폰트 선택 후 "Get font" 클릭</li>
+                                <li style="margin-bottom: 8px;">"Get embed code" 클릭</li>
+                                <li style="margin-bottom: 8px;">
+                                    <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">&lt;link&gt;</code> 태그의 <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">href</code> 부분을 복사하여 위 "폰트 URL"에 입력
+                                    <br><span style="color: #6c757d; font-size: 0.9em;">예: https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap</span>
+                                </li>
+                                <li style="margin-bottom: 8px;">
+                                    "CSS rules" 부분의 폰트 이름을 "폰트 이름"에 입력
+                                    <br><span style="color: #6c757d; font-size: 0.9em;">예: Roboto</span>
+                                </li>
+                            </ol>
+
+                            <p style="margin: 0 0 12px 0; font-weight: 600; color: #212529;">🇰🇷 눈누 폰트 (noonnu.cc) 사용법:</p>
+                            <ol style="margin: 0 0 0 0; padding-left: 20px;">
+                                <li style="margin-bottom: 8px;">
+                                    <a href="https://noonnu.cc" target="_blank" style="color: #0d6efd; text-decoration: none;">noonnu.cc</a> 접속
+                                </li>
+                                <li style="margin-bottom: 8px;">원하는 폰트 선택 후 "웹폰트로 사용" 탭 클릭</li>
+                                <li style="margin-bottom: 8px;">
+                                    <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">@import</code> 방식의 URL 부분을 복사하여 위 "폰트 URL"에 입력
+                                    <br><span style="color: #6c757d; font-size: 0.9em;">예: https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/Pretendard-Regular.woff</span>
+                                </li>
+                                <li style="margin-bottom: 8px;">
+                                    <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">font-family</code> 부분의 폰트 이름을 "폰트 이름"에 입력
+                                    <br><span style="color: #6c757d; font-size: 0.9em;">예: Pretendard-Regular</span>
+                                </li>
+                            </ol>
+
+                            <p style="margin: 16px 0 0 0; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; font-size: 0.85em;">
+                                <strong>💡 팁:</strong> 폰트가 적용되지 않으면 URL과 폰트 이름이 정확한지 다시 확인해보세요.
+                            </p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="name-align">텍스트 정렬</label>
+                <select id="name-align" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                    <option value="left">왼쪽</option>
+                    <option value="center">중앙</option>
+                    <option value="right">오른쪽</option>
+                </select>
+            </div>
+
+            <div class="input-group-linked">
+                <label for="name-font-size">크기</label>
+                <input type="range" id="name-font-size-slider" value="32" min="12" max="100">
+                <input type="number" id="name-font-size" value="32" min="12" max="100">
+            </div>
+            <div class="input-group-linked">
+                <label for="name-x">X</label>
+                <input type="range" id="name-x-slider" value="20" min="0" max="1000">
+                <input type="number" id="name-x" value="20" min="0" max="1000">
+            </div>
+            <div class="input-group-linked">
+                <label for="name-y">Y</label>
+                <input type="range" id="name-y-slider" value="20" min="0" max="1000">
+                <input type="number" id="name-y" value="20" min="0" max="1000">
+            </div>
+            <div class="input-group">
+                <label for="name-color">색상</label>
+                <input type="color" id="name-color" value="#333333" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+            </div>
+            
+            <div class="input-group">
+                <label for="name-font-weight">글꼴 굵기</label>
+                <select id="name-font-weight" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                    <option value="normal">Normal (400)</option>
+                    <option value="bold" selected>Bold (700)</option>
+                    <option value="100">Thin (100)</option>
+                    <option value="300">Light (300)</option>
+                    <option value="500">Medium (500)</option>
+                    <option value="900">Black (900)</option>
+                </select>
+            </div>
+
+            <div class="input-group-linked">
+                <label for="name-rotate">회전 (deg)</label>
+                <input type="range" id="name-rotate-slider" value="0" min="-45" max="45" step="1">
+                <input type="number" id="name-rotate" value="0" min="-45" max="45">
+            </div>
+
+            <div class="input-group">
+                <div class="checkbox-group" style="padding: 0; background: none;">
+                    <input type="checkbox" id="name-shadow-enable">
+                    <label for="name-shadow-enable">텍스트 그림자</label>
+                </div>
+                <div id="name-shadow-options" style="display: none; margin-top: 10px;">
+                    <div class="input-group-linked">
+                        <label for="name-shadow-x">X</label>
+                        <input type="range" id="name-shadow-x-slider" value="2" min="-10" max="10">
+                        <input type="number" id="name-shadow-x" value="2" min="-10" max="10">
+                    </div>
+                    <div class="input-group-linked">
+                        <label for="name-shadow-y">Y</label>
+                        <input type="range" id="name-shadow-y-slider" value="2" min="-10" max="10">
+                        <input type="number" id="name-shadow-y" value="2" min="-10" max="10">
+                    </div>
+                    <div class="input-group-linked">
+                        <label for="name-shadow-blur">흐림</label>
+                        <input type="range" id="name-shadow-blur-slider" value="4" min="0" max="20">
+                        <input type="number" id="name-shadow-blur" value="4" min="0" max="20">
+                    </div>
+                    <label for="name-shadow-color" style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px; margin-top: 10px;">색상</label>
+                    <input type="color" id="name-shadow-color" value="#FFFFFF" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="checkbox-group" style="padding: 0; background: none;">
+                    <input type="checkbox" id="name-gradient-enable">
+                    <label for="name-gradient-enable">텍스트 그라데이션</label>
+                </div>
+                <div id="name-gradient-options" style="display: none; margin-top: 10px; display: flex; gap: 10px;">
+                    <label style="font-size: 0.9em; flex-basis: 100%;">시작 → 끝</label>
+                    <input type="color" id="name-gradient-start" value="#FF0000" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                    <input type="color" id="name-gradient-end" value="#0000FF" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="checkbox-group" style="padding: 0; background: none;">
+                    <input type="checkbox" id="name-stroke-enable">
+                    <label for="name-stroke-enable">텍스트 외곽선</label>
+                </div>
+                <div id="name-stroke-options" style="display: none; margin-top: 10px;">
+                    <div class="input-group-linked">
+                        <label for="name-stroke-width">두께</label>
+                        <input type="range" id="name-stroke-width-slider" value="1" min="1" max="10">
+                        <input type="number" id="name-stroke-width" value="1" min="1" max="10">
+                    </div>
+                    <label for="name-stroke-color" style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px; margin-top: 10px;">색상</label>
+                    <input type="color" id="name-stroke-color" value="#000000" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>캐릭터 설명</h3>
+            <div class="input-group">
+                <label for="character-description">텍스트</label>
+                <textarea id="character-description" placeholder="캐릭터 설명 입력 (선택사항)" style="width: 100%; height: 60px; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box; font-family: inherit; resize: vertical;"></textarea>
+            </div>
+
+            <div class="checkbox-group" style="margin-bottom: 12px;">
+                <input type="checkbox" id="desc-custom-font">
+                <label for="desc-custom-font">개별 폰트 사용</label>
+            </div>
+
+            <div id="desc-font-settings" style="display: none;">
+                <div class="input-group">
+                    <label for="desc-font-source">폰트 소스</label>
+                    <select id="desc-font-source" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                        <option value="select">폰트 선택</option>
+                        <option value="custom">직접 입력</option>
+                    </select>
+                </div>
+
+                <div id="desc-font-select" class="input-group">
+                    <label for="desc-font-list">폰트 선택</label>
+                    <select id="desc-font-list" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                        <optgroup label="English">
+                            <option value="Montserrat">Montserrat (몬세라트)</option>
+                            <option value="Lato">Lato (라토)</option>
+                            <option value="Raleway">Raleway (랠리웨이)</option>
+                            <option value="Oswald">Oswald (오스왈드)</option>
+                            <option value="Merriweather">Merriweather (메리웨더)</option>
+                        </optgroup>
+                        <optgroup label="한국어">
+                            <option value="Noto Sans KR">Noto Sans KR (본고딕)</option>
+                            <option value="Noto Serif KR">Noto Serif KR (본명조)</option>
+                            <option value="Black Han Sans">Black Han Sans (검은고딕)</option>
+                            <option value="Jua">Jua (주아)</option>
+                            <option value="Do Hyeon">Do Hyeon (도현)</option>
+                            <option value="Nanum Gothic">Nanum Gothic (나눔고딕)</option>
+                            <option value="Nanum Myeongjo">Nanum Myeongjo (나눔명조)</option>
+                            <option value="Nanum Pen Script">Nanum Pen Script (나눔손글씨 펜)</option>
+                            <option value="Nanum Brush Script">Nanum Brush Script (나눔손글씨 붓)</option>
+                            <option value="Gamja Flower">Gamja Flower (감자꽃)</option>
+                            <option value="Poor Story">Poor Story (가난한 이야기)</option>
+                            <option value="Gothic A1">Gothic A1 (고딕 A1)</option>
+                            <option value="Sunflower">Sunflower (해바라기)</option>
+                            <option value="Stylish">Stylish (스타일리쉬)</option>
+                            <option value="East Sea Dokdo">East Sea Dokdo (동해 독도)</option>
+                        </optgroup>
+                        <optgroup label="日本語">
+                            <option value="Noto Sans JP">Noto Sans JP (본고딕 일본어)</option>
+                            <option value="Noto Serif JP">Noto Serif JP (본명조 일본어)</option>
+                            <option value="M PLUS Rounded 1c">M PLUS Rounded 1c (엠플러스 둥근)</option>
+                            <option value="Kosugi Maru">Kosugi Maru (코스기 마루)</option>
+                            <option value="Sawarabi Mincho">Sawarabi Mincho (사와라비 명조)</option>
+                        </optgroup>
+                        <optgroup label="中文">
+                            <option value="Noto Sans SC">Noto Sans SC (본고딕 간체)</option>
+                            <option value="Noto Sans TC">Noto Sans TC (본고딕 번체)</option>
+                            <option value="Noto Serif SC">Noto Serif SC (본명조 간체)</option>
+                            <option value="Noto Serif TC">Noto Serif TC (본명조 번체)</option>
+                            <option value="Ma Shan Zheng">Ma Shan Zheng (마산정)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div id="desc-custom-font-input" style="display: none;">
+                    <div class="input-group">
+                        <label for="desc-font-url">폰트 URL</label>
+                        <input type="text" id="desc-font-url" placeholder="https://fonts.googleapis.com/css2?family=..." style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box; font-size: 0.85em;">
+                    </div>
+                    <div class="input-group">
+                        <label for="desc-font-family-input">폰트 이름</label>
+                        <input type="text" id="desc-font-family-input" placeholder="Noto Sans KR" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box;">
+                    </div>
+
+                    <details style="margin-top: 12px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;">
+                        <summary style="cursor: pointer; font-weight: 600; color: #495057; font-size: 0.9em; user-select: none;">📖 폰트 사용 가이드</summary>
+                        <div style="margin-top: 12px; font-size: 0.85em; color: #495057; line-height: 1.6;">
+                            <p style="margin: 0 0 12px 0; font-weight: 600; color: #212529;">🔤 구글 폰트 (Google Fonts) 사용법:</p>
+                            <ol style="margin: 0 0 16px 0; padding-left: 20px;">
+                                <li style="margin-bottom: 8px;">
+                                    <a href="https://fonts.google.com" target="_blank" style="color: #0d6efd; text-decoration: none;">fonts.google.com</a> 접속
+                                </li>
+                                <li style="margin-bottom: 8px;">원하는 폰트 선택 후 "Get font" 클릭</li>
+                                <li style="margin-bottom: 8px;">"Get embed code" 클릭</li>
+                                <li style="margin-bottom: 8px;">
+                                    <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">&lt;link&gt;</code> 태그의 <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">href</code> 부분을 복사하여 위 "폰트 URL"에 입력
+                                    <br><span style="color: #6c757d; font-size: 0.9em;">예: https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap</span>
+                                </li>
+                                <li style="margin-bottom: 8px;">
+                                    "CSS rules" 부분의 폰트 이름을 "폰트 이름"에 입력
+                                    <br><span style="color: #6c757d; font-size: 0.9em;">예: Roboto</span>
+                                </li>
+                            </ol>
+
+                            <p style="margin: 0 0 12px 0; font-weight: 600; color: #212529;">🇰🇷 눈누 폰트 (noonnu.cc) 사용법:</p>
+                            <ol style="margin: 0 0 0 0; padding-left: 20px;">
+                                <li style="margin-bottom: 8px;">
+                                    <a href="https://noonnu.cc" target="_blank" style="color: #0d6efd; text-decoration: none;">noonnu.cc</a> 접속
+                                </li>
+                                <li style="margin-bottom: 8px;">원하는 폰트 선택 후 "웹폰트로 사용" 탭 클릭</li>
+                                <li style="margin-bottom: 8px;">
+                                    <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">@import</code> 방식의 URL 부분을 복사하여 위 "폰트 URL"에 입력
+                                    <br><span style="color: #6c757d; font-size: 0.9em;">예: https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/Pretendard-Regular.woff</span>
+                                </li>
+                                <li style="margin-bottom: 8px;">
+                                    <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">font-family</code> 부분의 폰트 이름을 "폰트 이름"에 입력
+                                    <br><span style="color: #6c757d; font-size: 0.9em;">예: Pretendard-Regular</span>
+                                </li>
+                            </ol>
+
+                            <p style="margin: 16px 0 0 0; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; font-size: 0.85em;">
+                                <strong>💡 팁:</strong> 폰트가 적용되지 않으면 URL과 폰트 이름이 정확한지 다시 확인해보세요.
+                            </p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="desc-align">텍스트 정렬</label>
+                <select id="desc-align" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                    <option value="left">왼쪽</option>
+                    <option value="center">중앙</option>
+                    <option value="right">오른쪽</option>
+                </select>
+            </div>
+
+            <div class="input-group-linked">
+                <label for="desc-font-size">크기</label>
+                <input type="range" id="desc-font-size-slider" value="16" min="8" max="48">
+                <input type="number" id="desc-font-size" value="16" min="8" max="48">
+            </div>
+            <div class="input-group-linked">
+                <label for="desc-x">X</label>
+                <input type="range" id="desc-x-slider" value="20" min="0" max="2000">
+                <input type="number" id="desc-x" value="20" min="0" max="2000">
+            </div>
+            <div class="input-group-linked">
+                <label for="desc-y">Y</label>
+                <input type="range" id="desc-y-slider" value="60" min="0" max="2000">
+                <input type="number" id="desc-y" value="60" min="0" max="2000">
+            </div>
+            <div class="input-group">
+                <label for="desc-color">색상</label>
+                <input type="color" id="desc-color" value="#666666" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+            </div>
+            <div class="input-group">
+                <label for="desc-font-weight">글꼴 굵기</label>
+                <select id="desc-font-weight" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                    <option value="normal" selected>Normal (400)</option>
+                    <option value="bold">Bold (700)</option>
+                    <option value="100">Thin (100)</option>
+                    <option value="300">Light (300)</option>
+                    <option value="500">Medium (500)</option>
+                    <option value="900">Black (900)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>워터마크</h3>
+            <div class="input-group">
+                <label for="watermark-text">텍스트</label>
+                <input type="text" id="watermark-text" placeholder="@artist_name" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box;">
+            </div>
+
+            <div class="input-group-linked">
+                <label for="watermark-font-size">크기</label>
+                <input type="range" id="watermark-font-size-slider" value="16" min="8" max="48">
+                <input type="number" id="watermark-font-size" value="16" min="8" max="48">
+            </div>
+
+            <div class="input-group-linked">
+                <label for="watermark-x">X</label>
+                <input type="range" id="watermark-x-slider" value="20" min="0" max="2000">
+                <input type="number" id="watermark-x" value="20" min="0" max="2000">
+            </div>
+
+            <div class="input-group-linked">
+                <label for="watermark-y">Y</label>
+                <input type="range" id="watermark-y-slider" value="20" min="0" max="2000">
+                <input type="number" id="watermark-y" value="20" min="0" max="2000">
+            </div>
+
+            <div class="input-group">
+                <label for="watermark-color">색상</label>
+                <input type="color" id="watermark-color" value="#999999" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+            </div>
+
+            <div class="input-group">
+                <label for="watermark-font-weight">글꼴 굵기</label>
+                <select id="watermark-font-weight" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                    <option value="normal" selected>Normal (400)</option>
+                    <option value="bold">Bold (700)</option>
+                    <option value="100">Thin (100)</option>
+                    <option value="300">Light (300)</option>
+                    <option value="500">Medium (500)</option>
+                    <option value="900">Black (900)</option>
+                </select>
+            </div>
+
+            <div class="input-group-linked">
+                <label for="watermark-rotate">회전 (deg)</label>
+                <input type="range" id="watermark-rotate-slider" value="0" min="-45" max="45" step="1">
+                <input type="number" id="watermark-rotate" value="0" min="-45" max="45">
+            </div>
+
+            <div class="input-group">
+                <div class="checkbox-group" style="padding: 0; background: none;">
+                    <input type="checkbox" id="watermark-shadow-enable">
+                    <label for="watermark-shadow-enable">텍스트 그림자</label>
+                </div>
+                <div id="watermark-shadow-options" style="display: none; margin-top: 10px;">
+                    <div class="input-group-linked">
+                        <label for="watermark-shadow-x">X</label>
+                        <input type="range" id="watermark-shadow-x-slider" value="1" min="-10" max="10">
+                        <input type="number" id="watermark-shadow-x" value="1" min="-10" max="10">
+                    </div>
+                    <div class="input-group-linked">
+                        <label for="watermark-shadow-y">Y</label>
+                        <input type="range" id="watermark-shadow-y-slider" value="1" min="-10" max="10">
+                        <input type="number" id="watermark-shadow-y" value="1" min="-10" max="10">
+                    </div>
+                    <div class="input-group-linked">
+                        <label for="watermark-shadow-blur">흐림</label>
+                        <input type="range" id="watermark-shadow-blur-slider" value="2" min="0" max="20">
+                        <input type="number" id="watermark-shadow-blur" value="2" min="0" max="20">
+                    </div>
+                    <label for="watermark-shadow-color" style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px; margin-top: 10px;">색상</label>
+                    <input type="color" id="watermark-shadow-color" value="#FFFFFF" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="checkbox-group" style="padding: 0; background: none;">
+                    <input type="checkbox" id="watermark-gradient-enable">
+                    <label for="watermark-gradient-enable">텍스트 그라데이션</label>
+                </div>
+                <div id="watermark-gradient-options" style="display: none; margin-top: 10px; display: flex; gap: 10px;">
+                    <label style="font-size: 0.9em; flex-basis: 100%;">시작 → 끝</label>
+                    <input type="color" id="watermark-gradient-start" value="#FF0000" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                    <input type="color" id="watermark-gradient-end" value="#0000FF" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="checkbox-group" style="padding: 0; background: none;">
+                    <input type="checkbox" id="watermark-stroke-enable">
+                    <label for="watermark-stroke-enable">텍스트 외곽선</label>
+                </div>
+                <div id="watermark-stroke-options" style="display: none; margin-top: 10px;">
+                    <div class="input-group-linked">
+                        <label for="watermark-stroke-width">두께</label>
+                        <input type="range" id="watermark-stroke-width-slider" value="1" min="1" max="10">
+                        <input type="number" id="watermark-stroke-width" value="1" min="1" max="10">
+                    </div>
+                    <label for="watermark-stroke-color" style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px; margin-top: 10px;">색상</label>
+                    <input type="color" id="watermark-stroke-color" value="#000000" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>표정 이름</h3>
+            <div class="checkbox-group" style="margin-bottom: 16px;">
+                <input type="checkbox" id="enable-expression-labels">
+                <label for="enable-expression-labels">표정 이름 표시</label>
+            </div>
+            <div id="expression-labels-settings" style="display: none;">
+                <div class="input-group">
+                    <label style="display: block; margin-bottom: 8px;">표정 이름 입력 (쉼표로 구분)</label>
+                    <textarea id="expression-names" placeholder="기본, 웃음, 화남, 슬픔, 놀람" style="width: 100%; height: 80px; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px; box-sizing: border-box; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="expr-align">텍스트 정렬</label>
+                    <select id="expr-align" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                        <option value="left">왼쪽</option>
+                        <option value="center" selected>중앙</option>
+                        <option value="right">오른쪽</option>
+                    </select>
+                </div>
+
+                <div class="input-group-linked">
+                    <label for="expr-font-size">크기</label>
+                    <input type="range" id="expr-font-size-slider" value="12" min="8" max="48">
+                    <input type="number" id="expr-font-size" value="12" min="8" max="48">
+                </div>
+
+                <div class="input-group">
+                    <label for="expr-color">색상</label>
+                    <input type="color" id="expr-color" value="#333333" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                </div>
+
+                <div class="input-group">
+                    <label for="expr-font-weight">글꼴 굵기</label>
+                    <select id="expr-font-weight" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 6px;">
+                        <option value="normal">Normal (400)</option>
+                        <option value="bold">Bold (700)</option>
+                        <option value="100">Thin (100)</option>
+                        <option value="300">Light (300)</option>
+                        <option value="500" selected>Medium (500)</option>
+                        <option value="900">Black (900)</option>
+                    </select>
+                </div>
+
+                <div class="input-group-linked">
+                    <label for="expr-offset-x">X 오프셋</label>
+                    <input type="range" id="expr-offset-x-slider" value="0" min="-100" max="100">
+                    <input type="number" id="expr-offset-x" value="0" min="-100" max="100">
+                </div>
+
+                <div class="input-group-linked">
+                    <label for="expr-offset-y">Y 오프셋</label>
+                    <input type="range" id="expr-offset-y-slider" value="0" min="-100" max="100">
+                    <input type="number" id="expr-offset-y" value="0" min="-100" max="100">
+                </div>
+
+                <div class="input-group">
+                    <div class="checkbox-group" style="padding: 0; background: none;">
+                        <input type="checkbox" id="expr-shadow-enable">
+                        <label for="expr-shadow-enable">텍스트 그림자</label>
+                    </div>
+                    <div id="expr-shadow-options" style="display: none; margin-top: 10px;">
+                        <div class="input-group-linked">
+                            <label for="expr-shadow-x">X</label>
+                            <input type="range" id="expr-shadow-x-slider" value="1" min="-10" max="10">
+                            <input type="number" id="expr-shadow-x" value="1" min="-10" max="10">
+                        </div>
+                        <div class="input-group-linked">
+                            <label for="expr-shadow-y">Y</label>
+                            <input type="range" id="expr-shadow-y-slider" value="1" min="-10" max="10">
+                            <input type="number" id="expr-shadow-y" value="1" min="-10" max="10">
+                        </div>
+                        <div class="input-group-linked">
+                            <label for="expr-shadow-blur">흐림</label>
+                            <input type="range" id="expr-shadow-blur-slider" value="2" min="0" max="20">
+                            <input type="number" id="expr-shadow-blur" value="2" min="0" max="20">
+                        </div>
+                        <label for="expr-shadow-color" style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px; margin-top: 10px;">색상</label>
+                        <input type="color" id="expr-shadow-color" value="#FFFFFF" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="checkbox-group" style="padding: 0; background: none;">
+                        <input type="checkbox" id="expr-gradient-enable">
+                        <label for="expr-gradient-enable">텍스트 그라데이션</label>
+                    </div>
+                    <div id="expr-gradient-options" style="display: none; margin-top: 10px; display: flex; gap: 10px;">
+                        <label style="font-size: 0.9em; flex-basis: 100%;">시작 → 끝</label>
+                        <input type="color" id="expr-gradient-start" value="#FF0000" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                        <input type="color" id="expr-gradient-end" value="#0000FF" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="checkbox-group" style="padding: 0; background: none;">
+                        <input type="checkbox" id="expr-stroke-enable">
+                        <label for="expr-stroke-enable">텍스트 외곽선</label>
+                    </div>
+                    <div id="expr-stroke-options" style="display: none; margin-top: 10px;">
+                        <div class="input-group-linked">
+                            <label for="expr-stroke-width">두께</label>
+                            <input type="range" id="expr-stroke-width-slider" value="1" min="1" max="10">
+                            <input type="number" id="expr-stroke-width" value="1" min="1" max="10">
+                        </div>
+                        <label for="expr-stroke-color" style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px; margin-top: 10px;">색상</label>
+                        <input type="color" id="expr-stroke-color" value="#000000" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>로고/이미지 추가</h3>
+            <div class="input-group">
+                <label for="logo-uploader">로고 이미지</label>
+                <input type="file" id="logo-uploader" accept="image/*">
+            </div>
+            <div class="input-group-linked">
+                <label for="logo-x">X</label>
+                <input type="range" id="logo-x-slider" value="20" min="0" max="2000">
+                <input type="number" id="logo-x" value="20" min="0" max="2000">
+            </div>
+            <div class="input-group-linked">
+                <label for="logo-y">Y</label>
+                <input type="range" id="logo-y-slider" value="20" min="0" max="2000">
+                <input type="number" id="logo-y" value="20" min="0" max="2000">
+            </div>
+            <div class="input-group-linked">
+                <label for="logo-max-width">최대 너비</label>
+                <input type="range" id="logo-max-width-slider" value="150" min="50" max="500">
+                <input type="number" id="logo-max-width" value="150" min="50" max="500">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 헬퍼 함수 ====================
+
+        // 슬라이더-숫자 입력 연동
+        function linkSliderToNumber(numberId, sliderId, callback) {
+            const numberInput = document.getElementById(numberId);
+            const sliderInput = document.getElementById(sliderId);
+            
+            if (!numberInput || !sliderInput) {
+                console.warn(`Link Error: ${numberId} or ${sliderId} not found.`);
+                return;
+            }
+
+            numberInput.addEventListener('input', (e) => {
+                let value = parseFloat(e.target.value);
+                if (numberInput.hasAttribute('min')) {
+                    value = Math.max(value, parseFloat(numberInput.getAttribute('min')));
+                }
+                if (numberInput.hasAttribute('max')) {
+                    value = Math.min(value, parseFloat(numberInput.getAttribute('max')));
+                }
+                numberInput.value = value;
+                sliderInput.value = value;
+                if (callback) callback(value);
+            });
+            
+            sliderInput.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                numberInput.value = value;
+                if (callback) callback(value);
+            });
+        }
+
+        // ==================== DOM 요소 ====================
+        const sheetCanvas = document.getElementById('sheet-canvas');
+        const bgImageContainer = document.getElementById('bg-image-container');
+        const baseImageContainer = document.getElementById('base-image-container');
+        const baseImageElement = document.getElementById('base-image');
+        const gridContainer = document.getElementById('grid-container');
+
+        // ==================== 설정값 관리 ====================
+
+        // 기본 설정값
+        const defaultConfig = {
+            sheet: { width: 1200, height: 1500 },
+            previewScale: 0.6,
+            baseImage: { file: null, url: '', x: 100, y: 50, scale: 1.0 },
+            faceBox: { x: 150, y: 100, w: 120, h: 150 },
+            grid: {
+                files: [], urls: [],
+                x: 700, y: 50,
+                columns: 5, gap: 10,
+                itemScale: 1.0,
+                roundCorners: false
+            },
+            decoration: {
+                enabled: true,
+                globalFont: {
+                    fontUrl: '',
+                    fontFamily: 'Arial'
+                },
+                background: {
+                    type: 'transparent',
+                    color: '#ffffff',
+                    colorType: 'color',
+                    colorGradientStart: '#ffffff',
+                    colorGradientEnd: '#000000',
+                    imageUrl: '',
+                    baseType: 'color',
+                    baseColor: '#ffffff',
+                    gradientStart: '#ffffff',
+                    gradientEnd: '#000000',
+                    imageX: 0,
+                    imageY: 0,
+                    imageScale: 100,
+                    imageOpacity: 100
+                },
+                characterName: {
+                    text: '',
+                    useCustomFont: false,
+                    fontUrl: '',
+                    fontFamily: 'Arial',
+                    textAlign: 'left',
+                    fontSize: 32,
+                    x: 20,
+                    y: 20,
+                    color: '#333333',
+
+                    fontWeight: 'bold',
+                    rotate: 0,
+
+                    stroke: {
+                        enabled: false,
+                        width: 1,
+                        color: '#000000'
+                    },
+
+                    gradient: {
+                        enabled: false,
+                        start: '#FF0000',
+                        end: '#0000FF'
+                    },
+
+                    shadow: {
+                        enabled: false,
+                        x: 2,
+                        y: 2,
+                        blur: 4,
+                        color: '#FFFFFF'
+                    }
+                },
+                characterDescription: {
+                    text: '',
+                    useCustomFont: false,
+                    fontUrl: '',
+                    fontFamily: 'Arial',
+                    textAlign: 'left',
+                    fontSize: 16,
+                    x: 20,
+                    y: 60,
+                    color: '#666666',
+                    fontWeight: 'normal'
+                },
+                watermark: {
+                    text: '',
+                    fontUrl: '',
+                    fontFamily: 'Arial',
+                    fontSize: 16,
+                    x: 20,
+                    y: 20,
+                    color: '#999999',
+                    fontWeight: 'normal',
+                    rotate: 0,
+
+                    shadow: {
+                        enabled: false,
+                        x: 1,
+                        y: 1,
+                        blur: 2,
+                        color: '#FFFFFF'
+                    },
+
+                    gradient: {
+                        enabled: false,
+                        start: '#FF0000',
+                        end: '#0000FF'
+                    },
+
+                    stroke: {
+                        enabled: false,
+                        width: 1,
+                        color: '#000000'
+                    }
+                },
+                expressionLabels: {
+                    enabled: false,
+                    names: [],
+                    fontUrl: '',
+                    fontFamily: 'Arial',
+                    textAlign: 'center',
+                    fontSize: 12,
+                    color: '#333333',
+                    fontWeight: '500',
+                    offsetX: 0,
+                    offsetY: 0,
+
+                    shadow: {
+                        enabled: false,
+                        x: 1,
+                        y: 1,
+                        blur: 2,
+                        color: '#FFFFFF'
+                    },
+
+                    gradient: {
+                        enabled: false,
+                        start: '#FF0000',
+                        end: '#0000FF'
+                    },
+
+                    stroke: {
+                        enabled: false,
+                        width: 1,
+                        color: '#000000'
+                    }
+                },
+                logo: {
+                    url: '',
+                    x: 20,
+                    y: 20,
+                    maxWidth: 150
+                }
+            }
+        };
+
+        // 현재 설정값
+        let sheetConfig = JSON.parse(JSON.stringify(defaultConfig));
+
+        // 로컬 스토리지 저장
+        function saveSettings() {
+            try {
+                const configToSave = JSON.parse(JSON.stringify(sheetConfig));
+                configToSave.baseImage.url = '';
+                configToSave.baseImage.file = null;
+                configToSave.grid.files = [];
+                configToSave.grid.urls = [];
+                configToSave.decoration.background.imageUrl = '';
+                configToSave.decoration.logo.url = '';
+
+                localStorage.setItem('characterSheetConfig', JSON.stringify(configToSave));
+            } catch (e) {
+                console.error('설정 저장 실패:', e);
+            }
+        }
+
+        // 로컬 스토리지 복원
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem('characterSheetConfig');
+                if (saved) {
+                    const loadedConfig = JSON.parse(saved);
+                    Object.keys(loadedConfig).forEach(key => {
+                        if (key === 'baseImage' || key === 'grid' || key === 'decoration') {
+                            sheetConfig[key] = { ...sheetConfig[key], ...loadedConfig[key] };
+                            if (key === 'decoration') {
+                                Object.keys(loadedConfig[key]).forEach(subKey => {
+                                    if (typeof loadedConfig[key][subKey] === 'object') {
+                                        sheetConfig[key][subKey] = { ...sheetConfig[key][subKey], ...loadedConfig[key][subKey] };
+                                    }
+                                });
+                            }
+                        } else {
+                            sheetConfig[key] = loadedConfig[key];
+                        }
+                    });
+                    return true;
+                }
+            } catch (e) {
+                console.error('설정 복원 실패:', e);
+            }
+            return false;
+        }
+
+        // 설정 초기화
+        function resetSettings() {
+            if (confirm('모든 설정을 초기화하시겠습니까?')) {
+                sheetConfig = JSON.parse(JSON.stringify(defaultConfig));
+                localStorage.removeItem('characterSheetConfig');
+                location.reload();
+            }
+        }
+
+        // ==================== 이벤트 리스너 ====================
+
+        // 시트 크기 조정
+        linkSliderToNumber('sheet-width', 'sheet-width-slider', (value) => {
+            sheetConfig.sheet.width = value;
+            constrainGridPosition();
+            renderPreview();
+        });
+        
+        linkSliderToNumber('sheet-height', 'sheet-height-slider', (value) => {
+            sheetConfig.sheet.height = value;
+            constrainGridPosition();
+            renderPreview();
+        });
+
+        const inputs = document.querySelectorAll('.control-panel input');
+        inputs.forEach(input => {
+            const excludedIds = [
+                'sheet-width', 'sheet-width-slider',
+                'sheet-height', 'sheet-height-slider',
+                'bg-image-x', 'bg-image-x-slider',
+                'bg-image-y', 'bg-image-y-slider',
+                'bg-image-scale', 'bg-image-scale-slider',
+                'bg-image-opacity', 'bg-image-opacity-slider'
+            ];
+            if (!excludedIds.includes(input.id)) {
+                input.addEventListener('input', updateConfigAndRender);
+                input.addEventListener('change', updateConfigAndRender);
+            }
+        });
+        document.getElementById('round-face-boxes').addEventListener('change', (e) => {
+            sheetConfig.grid.roundCorners = e.target.checked;
+            renderPreview();
+        });
+
+        // 꾸미기 패널 토글
+        document.getElementById('enable-decoration').addEventListener('change', (e) => {
+            sheetConfig.decoration.enabled = e.target.checked;
+            const panel = document.getElementById('decoration-panel');
+            if (e.target.checked) {
+                panel.classList.remove('inactive');
+            } else {
+                panel.classList.add('inactive');
+            }
+        });
+
+        // 배경 타입 변경
+        document.getElementById('bg-type').addEventListener('change', (e) => {
+            const type = e.target.value;
+            sheetConfig.decoration.background.type = type;
+
+            document.getElementById('bg-color-option').style.display = type === 'color' ? 'block' : 'none';
+            document.getElementById('bg-image-option').style.display = type === 'image' ? 'block' : 'none';
+
+            renderPreview();
+        });
+
+        // 배경 색상 타입 변경
+        document.getElementById('bg-color-type').addEventListener('change', (e) => {
+            sheetConfig.decoration.background.colorType = e.target.value;
+            const singleOption = document.getElementById('bg-color-single-option');
+            const gradientOption = document.getElementById('bg-color-gradient-option');
+            if (e.target.value === 'color') {
+                singleOption.style.display = 'block';
+                gradientOption.style.display = 'none';
+            } else {
+                singleOption.style.display = 'none';
+                gradientOption.style.display = 'block';
+            }
+            renderPreview();
+        });
+
+        // 배경 색상 변경
+        document.getElementById('bg-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.background.color = e.target.value;
+            renderPreview();
+        });
+
+        // 배경 색상 그라데이션 변경
+        document.getElementById('bg-color-gradient-start').addEventListener('input', (e) => {
+            sheetConfig.decoration.background.colorGradientStart = e.target.value;
+            renderPreview();
+        });
+
+        document.getElementById('bg-color-gradient-end').addEventListener('input', (e) => {
+            sheetConfig.decoration.background.colorGradientEnd = e.target.value;
+            renderPreview();
+        });
+
+        // 배경 이미지 업로드
+        document.getElementById('bg-image-uploader').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    sheetConfig.decoration.background.imageUrl = e.target.result;
+                    renderPreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 배경 이미지 베이스 타입 변경
+        document.getElementById('bg-image-base-type').addEventListener('change', (e) => {
+            sheetConfig.decoration.background.baseType = e.target.value;
+            const colorOption = document.getElementById('bg-image-base-color-option');
+            const gradientOption = document.getElementById('bg-image-base-gradient-option');
+            if (e.target.value === 'color') {
+                colorOption.style.display = 'block';
+                gradientOption.style.display = 'none';
+            } else {
+                colorOption.style.display = 'none';
+                gradientOption.style.display = 'block';
+            }
+            renderPreview();
+        });
+
+        // 배경 이미지 베이스 색상
+        document.getElementById('bg-image-base-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.background.baseColor = e.target.value;
+            renderPreview();
+        });
+
+        // 배경 이미지 그라데이션 색상
+        document.getElementById('bg-image-gradient-start').addEventListener('input', (e) => {
+            sheetConfig.decoration.background.gradientStart = e.target.value;
+            renderPreview();
+        });
+
+        document.getElementById('bg-image-gradient-end').addEventListener('input', (e) => {
+            sheetConfig.decoration.background.gradientEnd = e.target.value;
+            renderPreview();
+        });
+
+        // 배경 이미지 위치 및 크기/투명도
+        linkSliderToNumber('bg-image-x', 'bg-image-x-slider', (value) => {
+            sheetConfig.decoration.background.imageX = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('bg-image-y', 'bg-image-y-slider', (value) => {
+            sheetConfig.decoration.background.imageY = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('bg-image-scale', 'bg-image-scale-slider', (value) => {
+            sheetConfig.decoration.background.imageScale = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('bg-image-opacity', 'bg-image-opacity-slider', (value) => {
+            sheetConfig.decoration.background.imageOpacity = value;
+            renderPreview();
+        });
+
+        // ==================== 폰트 관리 ====================
+
+        // 폰트 데이터 매핑
+        const fonts = {
+            'Montserrat': 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap',
+            'Lato': 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap',
+            'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@400;700;900&display=swap',
+            'Oswald': 'https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap',
+            'Merriweather': 'https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&display=swap',
+            'Noto Sans KR': 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap',
+            'Pretendard': 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css',
+            'Spoqa Han Sans Neo': 'https://cdn.jsdelivr.net/gh/spoqa/spoqa-han-sans@latest/css/SpoqaHanSansNeo.css',
+            'GmarketSans': 'https://cdn.jsdelivr.net/gh/fonts-archive/GmarketSans/GmarketSans.css',
+            'IBM Plex Sans KR': 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;700&display=swap',
+            'Nanum Gothic': 'https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap',
+            'Nanum Myeongjo': 'https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap',
+            'Black Han Sans': 'https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap',
+            'Jua': 'https://fonts.googleapis.com/css2?family=Jua&display=swap',
+            'Do Hyeon': 'https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap',
+            'Gamja Flower': 'https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap',
+            'Gowun Dodum': 'https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap',
+            'Noto Sans JP': 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap',
+            'Noto Serif JP': 'https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap',
+            'M PLUS 1p': 'https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;700;900&display=swap',
+            'Sawarabi Gothic': 'https://fonts.googleapis.com/css2?family=Sawarabi+Gothic&display=swap',
+            'Kosugi Maru': 'https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap',
+            'Noto Sans SC': 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap',
+            'Noto Sans TC': 'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap',
+            'Noto Serif SC': 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap',
+            'Noto Serif TC': 'https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap',
+            'Ma Shan Zheng': 'https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap'
+        };
+
+        // 폰트 옵션 데이터
+        const fontOptions = [
+            {
+                label: 'English',
+                fonts: [
+                    { value: 'Montserrat', label: 'Montserrat (몬세라트)' },
+                    { value: 'Lato', label: 'Lato (라토)' },
+                    { value: 'Raleway', label: 'Raleway (랠리웨이)' },
+                    { value: 'Oswald', label: 'Oswald (오스왈드)' },
+                    { value: 'Merriweather', label: 'Merriweather (메리웨더)' }
+                ]
+            },
+            {
+                label: '한국어',
+                fonts: [
+                    { value: 'Noto Sans KR', label: 'Noto Sans KR (본고딕)' },
+                    { value: 'Pretendard', label: 'Pretendard (프리텐다드)' },
+                    { value: 'Spoqa Han Sans Neo', label: 'Spoqa Han Sans Neo (스포카 한 산스)' },
+                    { value: 'GmarketSans', label: 'Gmarket Sans (지마켓 산스)' },
+                    { value: 'IBM Plex Sans KR', label: 'IBM Plex Sans KR' },
+                    { value: 'Nanum Gothic', label: 'Nanum Gothic (나눔고딕)' },
+                    { value: 'Nanum Myeongjo', label: 'Nanum Myeongjo (나눔명조)' },
+                    { value: 'Black Han Sans', label: 'Black Han Sans (한산체)' },
+                    { value: 'Jua', label: 'Jua (주아체)' },
+                    { value: 'Do Hyeon', label: 'Do Hyeon (도현체)' },
+                    { value: 'Gamja Flower', label: 'Gamja Flower (감자꽃체)' },
+                    { value: 'Gowun Dodum', label: 'Gowun Dodum (고운돋움)' }
+                ]
+            },
+            {
+                label: '日本語',
+                fonts: [
+                    { value: 'Noto Sans JP', label: 'Noto Sans JP (본고딕 JP)' },
+                    { value: 'Noto Serif JP', label: 'Noto Serif JP (본명조 JP)' },
+                    { value: 'M PLUS 1p', label: 'M PLUS 1p' },
+                    { value: 'Sawarabi Gothic', label: 'Sawarabi Gothic (사와라비 고딕)' },
+                    { value: 'Kosugi Maru', label: 'Kosugi Maru (코스기 마루)' }
+                ]
+            },
+            {
+                label: '中文',
+                fonts: [
+                    { value: 'Noto Sans SC', label: 'Noto Sans SC (본고딕 간체)' },
+                    { value: 'Noto Sans TC', label: 'Noto Sans TC (본고딕 번체)' },
+                    { value: 'Noto Serif SC', label: 'Noto Serif SC (본명조 간체)' },
+                    { value: 'Noto Serif TC', label: 'Noto Serif TC (본명조 번체)' },
+                    { value: 'Ma Shan Zheng', label: 'Ma Shan Zheng (마산정)' }
+                ]
+            }
+        ];
+
+        // 폰트 옵션 생성 함수
+        function populateFontOptions(selectElement) {
+            selectElement.innerHTML = '';
+            fontOptions.forEach(group => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = group.label;
+                group.fonts.forEach(font => {
+                    const option = document.createElement('option');
+                    option.value = font.value;
+                    option.textContent = font.label;
+                    optgroup.appendChild(option);
+                });
+                selectElement.appendChild(optgroup);
+            });
+        }
+
+        // --- 폰트 로드 함수 ---
+        function loadFont(url) {
+            // 기존 폰트 링크 제거
+            const existingFontLink = document.getElementById('custom-font-link');
+            if (existingFontLink) {
+                existingFontLink.remove();
+            }
+
+            if (url) {
+                const link = document.createElement('link');
+                link.id = 'custom-font-link';
+                link.rel = 'stylesheet';
+                link.href = url;
+                document.head.appendChild(link);
+            }
+        }
+
+        // --- 표정 이름 폰트 로드 함수 ---
+        function loadExprFont(url) {
+            // 기존 표정 폰트 링크 제거
+            const existingFontLink = document.getElementById('expr-font-link');
+            if (existingFontLink) {
+                existingFontLink.remove();
+            }
+
+            if (url) {
+                const link = document.createElement('link');
+                link.id = 'expr-font-link';
+                link.rel = 'stylesheet';
+                link.href = url;
+                document.head.appendChild(link);
+            }
+        }
+
+        // --- 워터마크 폰트 로드 함수 ---
+        function loadWatermarkFont(url) {
+            // 기존 워터마크 폰트 링크 제거
+            const existingFontLink = document.getElementById('watermark-font-link');
+            if (existingFontLink) {
+                existingFontLink.remove();
+            }
+
+            if (url) {
+                const link = document.createElement('link');
+                link.id = 'watermark-font-link';
+                link.rel = 'stylesheet';
+                link.href = url;
+                document.head.appendChild(link);
+            }
+        }
+
+        // --- 전역 폰트 로드 함수 ---
+        function loadGlobalFont(url) {
+            // 기존 전역 폰트 링크 제거
+            const existingFontLink = document.getElementById('global-font-link');
+            if (existingFontLink) {
+                existingFontLink.remove();
+            }
+
+            if (url) {
+                const link = document.createElement('link');
+                link.id = 'global-font-link';
+                link.rel = 'stylesheet';
+                link.href = url;
+                document.head.appendChild(link);
+            }
+        }
+
+        // --- 전역 폰트 소스 선택 ---
+        document.getElementById('global-font-source').addEventListener('change', (e) => {
+            const source = e.target.value;
+            document.getElementById('global-font-select').style.display = 'none';
+            document.getElementById('global-custom-font-input').style.display = 'none';
+
+            if (source === 'select') {
+                document.getElementById('global-font-select').style.display = 'block';
+                const fontName = document.getElementById('global-font-list').value;
+                if (fonts[fontName]) {
+                    loadGlobalFont(fonts[fontName]);
+                    sheetConfig.decoration.globalFont.fontFamily = fontName;
+                }
+            } else if (source === 'custom') {
+                document.getElementById('global-custom-font-input').style.display = 'block';
+            }
+            renderPreview();
+        });
+
+        // --- 전역 폰트 선택 ---
+        document.getElementById('global-font-list').addEventListener('change', (e) => {
+            const fontName = e.target.value;
+            if (fonts[fontName]) {
+                loadGlobalFont(fonts[fontName]);
+                sheetConfig.decoration.globalFont.fontFamily = fontName;
+                renderPreview();
+            }
+        });
+
+        // --- 전역 폰트 직접 입력 ---
+        document.getElementById('global-font-url').addEventListener('input', (e) => {
+            const url = e.target.value.trim();
+            sheetConfig.decoration.globalFont.fontUrl = url;
+            loadGlobalFont(url);
+            renderPreview();
+        });
+
+        document.getElementById('global-font-family').addEventListener('input', (e) => {
+            sheetConfig.decoration.globalFont.fontFamily = e.target.value || 'Arial';
+            renderPreview();
+        });
+
+        // --- 캐릭터 이름 관련 입력 ---
+        document.getElementById('character-name').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterName.text = e.target.value;
+            renderPreview();
+        });
+
+        // 캐릭터 이름 개별 폰트 토글
+        document.getElementById('name-custom-font').addEventListener('change', (e) => {
+            sheetConfig.decoration.characterName.useCustomFont = e.target.checked;
+            document.getElementById('name-font-settings').style.display = e.target.checked ? 'block' : 'none';
+            renderPreview();
+        });
+
+        // 캐릭터 이름 폰트 소스 선택
+        document.getElementById('name-font-source').addEventListener('change', (e) => {
+            const source = e.target.value;
+            document.getElementById('name-font-select').style.display = source === 'select' ? 'block' : 'none';
+            document.getElementById('name-custom-font-input').style.display = source === 'custom' ? 'block' : 'none';
+            if (source === 'select') {
+                const fontName = document.getElementById('name-font-list').value;
+                if (fonts[fontName]) {
+                    loadFont(fonts[fontName]);
+                    sheetConfig.decoration.characterName.fontFamily = fontName;
+                }
+            }
+            renderPreview();
+        });
+
+        document.getElementById('name-font-list').addEventListener('change', (e) => {
+            const fontName = e.target.value;
+            if (fonts[fontName]) {
+                loadFont(fonts[fontName]);
+                sheetConfig.decoration.characterName.fontFamily = fontName;
+                renderPreview();
+            }
+        });
+
+        document.getElementById('name-font-url').addEventListener('input', (e) => {
+            const url = e.target.value.trim();
+            sheetConfig.decoration.characterName.fontUrl = url;
+            loadFont(url);
+            renderPreview();
+        });
+
+        document.getElementById('name-font-family').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterName.fontFamily = e.target.value || 'Arial';
+            renderPreview();
+        });
+
+        document.getElementById('name-align').addEventListener('change', (e) => {
+            sheetConfig.decoration.characterName.textAlign = e.target.value;
+            renderPreview();
+        });
+
+        // --- 캐릭터 설명 관련 입력 ---
+        document.getElementById('character-description').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterDescription.text = e.target.value;
+            renderPreview();
+        });
+
+        // 캐릭터 설명 개별 폰트 토글
+        document.getElementById('desc-custom-font').addEventListener('change', (e) => {
+            sheetConfig.decoration.characterDescription.useCustomFont = e.target.checked;
+            document.getElementById('desc-font-settings').style.display = e.target.checked ? 'block' : 'none';
+            renderPreview();
+        });
+
+        // 캐릭터 설명 폰트 관련
+        document.getElementById('desc-font-source').addEventListener('change', (e) => {
+            const source = e.target.value;
+            document.getElementById('desc-font-select').style.display = source === 'select' ? 'block' : 'none';
+            document.getElementById('desc-custom-font-input').style.display = source === 'custom' ? 'block' : 'none';
+            renderPreview();
+        });
+
+        document.getElementById('desc-font-list').addEventListener('change', (e) => {
+            const fontName = e.target.value;
+            if (fonts[fontName]) {
+                loadExprFont(fonts[fontName]);
+                sheetConfig.decoration.characterDescription.fontFamily = fontName;
+                renderPreview();
+            }
+        });
+
+        document.getElementById('desc-font-url').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterDescription.fontUrl = e.target.value.trim();
+            loadExprFont(e.target.value.trim());
+            renderPreview();
+        });
+
+        document.getElementById('desc-font-family-input').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterDescription.fontFamily = e.target.value || 'Arial';
+            renderPreview();
+        });
+
+        document.getElementById('desc-align').addEventListener('change', (e) => {
+            sheetConfig.decoration.characterDescription.textAlign = e.target.value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('desc-font-size', 'desc-font-size-slider', (value) => {
+            sheetConfig.decoration.characterDescription.fontSize = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('desc-x', 'desc-x-slider', (value) => {
+            sheetConfig.decoration.characterDescription.x = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('desc-y', 'desc-y-slider', (value) => {
+            sheetConfig.decoration.characterDescription.y = value;
+            renderPreview();
+        });
+
+        document.getElementById('desc-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterDescription.color = e.target.value;
+            renderPreview();
+        });
+
+        document.getElementById('desc-font-weight').addEventListener('change', (e) => {
+            sheetConfig.decoration.characterDescription.fontWeight = e.target.value;
+            renderPreview();
+        });
+
+        // (v8) linkSliderToNumber 헬퍼 함수를 사용하도록 수정
+        linkSliderToNumber('name-font-size', 'name-font-size-slider', (value) => {
+            sheetConfig.decoration.characterName.fontSize = value;
+            renderPreview();
+        });
+        
+        linkSliderToNumber('name-x', 'name-x-slider', (value) => {
+            sheetConfig.decoration.characterName.x = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('name-y', 'name-y-slider', (value) => {
+            sheetConfig.decoration.characterName.y = value;
+            renderPreview();
+        });
+
+        document.getElementById('name-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterName.color = e.target.value;
+            renderPreview();
+        });
+
+        // --- [시작] 캐릭터 이름 꾸미기 리스너 (v8 추가) ---
+
+        // 폰트 굵기
+        document.getElementById('name-font-weight').addEventListener('change', (e) => {
+            sheetConfig.decoration.characterName.fontWeight = e.target.value;
+            renderPreview();
+        });
+
+        // 회전 (슬라이더 + 숫자)
+        linkSliderToNumber('name-rotate', 'name-rotate-slider', (value) => {
+            sheetConfig.decoration.characterName.rotate = value;
+            renderPreview();
+        });
+        
+        // 그라데이션 토글
+        document.getElementById('name-gradient-enable').addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sheetConfig.decoration.characterName.gradient.enabled = enabled;
+            document.getElementById('name-gradient-options').style.display = enabled ? 'flex' : 'none';
+            renderPreview();
+        });
+        // 그라데이션 색상
+        document.getElementById('name-gradient-start').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterName.gradient.start = e.target.value;
+            renderPreview();
+        });
+        document.getElementById('name-gradient-end').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterName.gradient.end = e.target.value;
+            renderPreview();
+        });
+
+        // 외곽선 토글
+        document.getElementById('name-stroke-enable').addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sheetConfig.decoration.characterName.stroke.enabled = enabled;
+            document.getElementById('name-stroke-options').style.display = enabled ? 'block' : 'none';
+            renderPreview();
+        });
+        // 외곽선 너비 (슬라이더 + 숫자)
+        linkSliderToNumber('name-stroke-width', 'name-stroke-width-slider', (value) => {
+            sheetConfig.decoration.characterName.stroke.width = value;
+            renderPreview();
+        });
+        // 외곽선 색상
+        document.getElementById('name-stroke-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterName.stroke.color = e.target.value;
+            renderPreview();
+        });
+
+        // 그림자 토글
+        document.getElementById('name-shadow-enable').addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sheetConfig.decoration.characterName.shadow.enabled = enabled;
+            document.getElementById('name-shadow-options').style.display = enabled ? 'block' : 'none';
+            renderPreview();
+        });
+        // 그림자 X (슬라이더 + 숫자)
+        linkSliderToNumber('name-shadow-x', 'name-shadow-x-slider', (value) => {
+            sheetConfig.decoration.characterName.shadow.x = value;
+            renderPreview();
+        });
+        // 그림자 Y (슬라이더 + 숫자)
+        linkSliderToNumber('name-shadow-y', 'name-shadow-y-slider', (value) => {
+            sheetConfig.decoration.characterName.shadow.y = value;
+            renderPreview();
+        });
+        // 그림자 흐림 (슬라이더 + 숫자)
+        linkSliderToNumber('name-shadow-blur', 'name-shadow-blur-slider', (value) => {
+            sheetConfig.decoration.characterName.shadow.blur = value;
+            renderPreview();
+        });
+        // 그림자 색상
+        document.getElementById('name-shadow-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.characterName.shadow.color = e.target.value;
+            renderPreview();
+        });
+
+        // --- [끝] 캐릭터 이름 꾸미기 리스너 ---
+
+
+        // --- 워터마크 입력 ---
+        document.getElementById('watermark-text').addEventListener('input', (e) => {
+            sheetConfig.decoration.watermark.text = e.target.value;
+            renderPreview();
+        });
+
+        // --- 워터마크 스타일 ---
+        linkSliderToNumber('watermark-font-size', 'watermark-font-size-slider', (value) => {
+            sheetConfig.decoration.watermark.fontSize = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('watermark-x', 'watermark-x-slider', (value) => {
+            sheetConfig.decoration.watermark.x = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('watermark-y', 'watermark-y-slider', (value) => {
+            sheetConfig.decoration.watermark.y = value;
+            renderPreview();
+        });
+
+        document.getElementById('watermark-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.watermark.color = e.target.value;
+            renderPreview();
+        });
+
+        document.getElementById('watermark-font-weight').addEventListener('change', (e) => {
+            sheetConfig.decoration.watermark.fontWeight = e.target.value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('watermark-rotate', 'watermark-rotate-slider', (value) => {
+            sheetConfig.decoration.watermark.rotate = value;
+            renderPreview();
+        });
+
+        // --- 워터마크 그림자 ---
+        document.getElementById('watermark-shadow-enable').addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sheetConfig.decoration.watermark.shadow.enabled = enabled;
+            document.getElementById('watermark-shadow-options').style.display = enabled ? 'block' : 'none';
+            renderPreview();
+        });
+
+        linkSliderToNumber('watermark-shadow-x', 'watermark-shadow-x-slider', (value) => {
+            sheetConfig.decoration.watermark.shadow.x = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('watermark-shadow-y', 'watermark-shadow-y-slider', (value) => {
+            sheetConfig.decoration.watermark.shadow.y = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('watermark-shadow-blur', 'watermark-shadow-blur-slider', (value) => {
+            sheetConfig.decoration.watermark.shadow.blur = value;
+            renderPreview();
+        });
+
+        document.getElementById('watermark-shadow-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.watermark.shadow.color = e.target.value;
+            renderPreview();
+        });
+
+        // --- 워터마크 그라데이션 ---
+        document.getElementById('watermark-gradient-enable').addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sheetConfig.decoration.watermark.gradient.enabled = enabled;
+            document.getElementById('watermark-gradient-options').style.display = enabled ? 'flex' : 'none';
+            renderPreview();
+        });
+
+        document.getElementById('watermark-gradient-start').addEventListener('input', (e) => {
+            sheetConfig.decoration.watermark.gradient.start = e.target.value;
+            renderPreview();
+        });
+
+        document.getElementById('watermark-gradient-end').addEventListener('input', (e) => {
+            sheetConfig.decoration.watermark.gradient.end = e.target.value;
+            renderPreview();
+        });
+
+        // --- 워터마크 외곽선 ---
+        document.getElementById('watermark-stroke-enable').addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sheetConfig.decoration.watermark.stroke.enabled = enabled;
+            document.getElementById('watermark-stroke-options').style.display = enabled ? 'block' : 'none';
+            renderPreview();
+        });
+
+        linkSliderToNumber('watermark-stroke-width', 'watermark-stroke-width-slider', (value) => {
+            sheetConfig.decoration.watermark.stroke.width = value;
+            renderPreview();
+        });
+
+        document.getElementById('watermark-stroke-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.watermark.stroke.color = e.target.value;
+            renderPreview();
+        });
+
+        // --- 표정 이름 표시 체크박스 ---
+        document.getElementById('enable-expression-labels').addEventListener('change', (e) => {
+            sheetConfig.decoration.expressionLabels.enabled = e.target.checked;
+            document.getElementById('expression-labels-settings').style.display = e.target.checked ? 'block' : 'none';
+            renderPreview();
+        });
+
+        // --- 표정 이름 입력 ---
+        document.getElementById('expression-names').addEventListener('input', (e) => {
+            const names = e.target.value.split(',').map(name => name.trim()).filter(name => name);
+            sheetConfig.decoration.expressionLabels.names = names;
+            renderPreview();
+        });
+
+        // --- 표정 이름 스타일 ---
+        document.getElementById('expr-align').addEventListener('change', (e) => {
+            sheetConfig.decoration.expressionLabels.textAlign = e.target.value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('expr-font-size', 'expr-font-size-slider', (value) => {
+            sheetConfig.decoration.expressionLabels.fontSize = value;
+            renderPreview();
+        });
+
+        document.getElementById('expr-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.expressionLabels.color = e.target.value;
+            renderPreview();
+        });
+
+        document.getElementById('expr-font-weight').addEventListener('change', (e) => {
+            sheetConfig.decoration.expressionLabels.fontWeight = e.target.value;
+            renderPreview();
+        });
+
+        // --- 표정 이름 위치 오프셋 ---
+        linkSliderToNumber('expr-offset-x', 'expr-offset-x-slider', (value) => {
+            sheetConfig.decoration.expressionLabels.offsetX = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('expr-offset-y', 'expr-offset-y-slider', (value) => {
+            sheetConfig.decoration.expressionLabels.offsetY = value;
+            renderPreview();
+        });
+
+        // --- 표정 이름 그림자 ---
+        document.getElementById('expr-shadow-enable').addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sheetConfig.decoration.expressionLabels.shadow.enabled = enabled;
+            document.getElementById('expr-shadow-options').style.display = enabled ? 'block' : 'none';
+            renderPreview();
+        });
+
+        linkSliderToNumber('expr-shadow-x', 'expr-shadow-x-slider', (value) => {
+            sheetConfig.decoration.expressionLabels.shadow.x = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('expr-shadow-y', 'expr-shadow-y-slider', (value) => {
+            sheetConfig.decoration.expressionLabels.shadow.y = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('expr-shadow-blur', 'expr-shadow-blur-slider', (value) => {
+            sheetConfig.decoration.expressionLabels.shadow.blur = value;
+            renderPreview();
+        });
+
+        document.getElementById('expr-shadow-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.expressionLabels.shadow.color = e.target.value;
+            renderPreview();
+        });
+
+        // --- 표정 이름 그라데이션 ---
+        document.getElementById('expr-gradient-enable').addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sheetConfig.decoration.expressionLabels.gradient.enabled = enabled;
+            document.getElementById('expr-gradient-options').style.display = enabled ? 'flex' : 'none';
+            renderPreview();
+        });
+
+        document.getElementById('expr-gradient-start').addEventListener('input', (e) => {
+            sheetConfig.decoration.expressionLabels.gradient.start = e.target.value;
+            renderPreview();
+        });
+
+        document.getElementById('expr-gradient-end').addEventListener('input', (e) => {
+            sheetConfig.decoration.expressionLabels.gradient.end = e.target.value;
+            renderPreview();
+        });
+
+        // --- 표정 이름 외곽선 ---
+        document.getElementById('expr-stroke-enable').addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sheetConfig.decoration.expressionLabels.stroke.enabled = enabled;
+            document.getElementById('expr-stroke-options').style.display = enabled ? 'block' : 'none';
+            renderPreview();
+        });
+
+        linkSliderToNumber('expr-stroke-width', 'expr-stroke-width-slider', (value) => {
+            sheetConfig.decoration.expressionLabels.stroke.width = value;
+            renderPreview();
+        });
+
+        document.getElementById('expr-stroke-color').addEventListener('input', (e) => {
+            sheetConfig.decoration.expressionLabels.stroke.color = e.target.value;
+            renderPreview();
+        });
+
+        // --- 로고 업로드 ---
+        document.getElementById('logo-uploader').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    sheetConfig.decoration.logo.url = e.target.result;
+                    renderPreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- 로고 위치 및 크기 조정 ---
+        linkSliderToNumber('logo-x', 'logo-x-slider', (value) => {
+            sheetConfig.decoration.logo.x = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('logo-y', 'logo-y-slider', (value) => {
+            sheetConfig.decoration.logo.y = value;
+            renderPreview();
+        });
+
+        linkSliderToNumber('logo-max-width', 'logo-max-width-slider', (value) => {
+            sheetConfig.decoration.logo.maxWidth = value;
+            renderPreview();
+        });
+
+
+        function constrainGridPosition() {
+            // 표정시트가 시트 영역을 벗어나지 않도록 제약
+            if (sheetConfig.grid.urls.length === 0) return;
+
+            const gridWidth = sheetConfig.grid.columns * sheetConfig.faceBox.w +
+                             (sheetConfig.grid.columns - 1) * sheetConfig.grid.gap;
+            const gridHeight = Math.ceil(sheetConfig.grid.urls.length / sheetConfig.grid.columns) * sheetConfig.faceBox.h +
+                              (Math.ceil(sheetConfig.grid.urls.length / sheetConfig.grid.columns) - 1) * sheetConfig.grid.gap;
+
+            sheetConfig.grid.x = Math.max(0, Math.min(sheetConfig.grid.x, sheetConfig.sheet.width - gridWidth));
+            sheetConfig.grid.y = Math.max(0, Math.min(sheetConfig.grid.y, sheetConfig.sheet.height - gridHeight));
+
+            // UI 업데이트
+            document.getElementById('grid-x').value = sheetConfig.grid.x.toFixed(0);
+            document.getElementById('grid-y').value = sheetConfig.grid.y.toFixed(0);
+            document.getElementById('grid-x-slider').value = sheetConfig.grid.x.toFixed(0);
+            document.getElementById('grid-y-slider').value = sheetConfig.grid.y.toFixed(0);
+        }
+
+        function updateConfigAndRender(event) {
+            const input = event.target;
+            const id = input.id;
+            const isSlider = input.type === 'range' || id.endsWith('-slider');
+            let baseId = id.replace('-slider', '');
+
+            let value = (input.type === 'number' || input.type === 'range') ? parseFloat(input.value) : input.value;
+
+            switch (baseId) {
+                case 'sheet-width': sheetConfig.sheet.width = value; break;
+                case 'sheet-height': sheetConfig.sheet.height = value; break;
+                case 'preview-scale': sheetConfig.previewScale = value / 100; break;
+
+                case 'base-image-x': sheetConfig.baseImage.x = value; break;
+                case 'base-image-y': sheetConfig.baseImage.y = value; break;
+                case 'base-image-scale': sheetConfig.baseImage.scale = value / 100; break;
+
+                case 'face-x': sheetConfig.faceBox.x = value; break;
+                case 'face-y': sheetConfig.faceBox.y = value; break;
+                case 'face-w': sheetConfig.faceBox.w = value; break;
+                case 'face-h': sheetConfig.faceBox.h = value; break;
+
+                case 'grid-x': sheetConfig.grid.x = value; break;
+                case 'grid-y': sheetConfig.grid.y = value; break;
+                case 'grid-columns': sheetConfig.grid.columns = Math.max(1, Math.round(value)); break;
+                case 'grid-gap': sheetConfig.grid.gap = value; break;
+                case 'grid-item-scale': sheetConfig.grid.itemScale = value / 100; break;
+            }
+
+            if (id.startsWith('sheet-') || id.startsWith('preview-') || id.startsWith('base-') || id.startsWith('face-') || id.startsWith('grid-')) {
+                const numberInput = document.getElementById(baseId);
+                const sliderInput = document.getElementById(baseId + '-slider');
+
+                if (numberInput && sliderInput) {
+                    if (isSlider) {
+                        numberInput.value = value;
+                    } else {
+                        sliderInput.value = value;
+                    }
+                }
+            }
+
+            if (input.type !== 'file') {
+                constrainGridPosition();
+                renderPreview();
+            }
+        }
+
+        // --- 2. 파일 업로드 핸들러 ---
+        
+        document.getElementById('base-image-uploader').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                sheetConfig.baseImage.file = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    sheetConfig.baseImage.url = e.target.result;
+                    renderPreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 썸네일 목록 렌더링 함수
+        function renderImagePreviews() {
+            const container = document.getElementById('image-preview-list');
+            container.innerHTML = '';
+
+            sheetConfig.grid.urls.forEach((url, index) => {
+                const item = document.createElement('div');
+                item.className = 'image-preview-item';
+
+                const img = document.createElement('img');
+                img.src = url;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = () => removeImage(index);
+
+                // 화살표 버튼 컨테이너
+                const arrowButtons = document.createElement('div');
+                arrowButtons.className = 'arrow-buttons';
+
+                // 왼쪽 화살표 버튼
+                const leftBtn = document.createElement('button');
+                leftBtn.className = 'arrow-btn';
+                leftBtn.innerHTML = '←';
+                leftBtn.onclick = () => moveImage(index, -1);
+                if (index === 0) leftBtn.disabled = true;
+
+                // 오른쪽 화살표 버튼
+                const rightBtn = document.createElement('button');
+                rightBtn.className = 'arrow-btn';
+                rightBtn.innerHTML = '→';
+                rightBtn.onclick = () => moveImage(index, 1);
+                if (index === sheetConfig.grid.urls.length - 1) rightBtn.disabled = true;
+
+                arrowButtons.appendChild(leftBtn);
+                arrowButtons.appendChild(rightBtn);
+
+                item.appendChild(img);
+                item.appendChild(removeBtn);
+                item.appendChild(arrowButtons);
+                container.appendChild(item);
+            });
+        }
+
+        // 이미지 순서 변경 함수
+        function moveImage(index, direction) {
+            const newIndex = index + direction;
+
+            // 범위 체크
+            if (newIndex < 0 || newIndex >= sheetConfig.grid.urls.length) {
+                return;
+            }
+
+            // files 배열에서 순서 변경
+            const tempFile = sheetConfig.grid.files[index];
+            sheetConfig.grid.files[index] = sheetConfig.grid.files[newIndex];
+            sheetConfig.grid.files[newIndex] = tempFile;
+
+            // urls 배열에서 순서 변경
+            const tempUrl = sheetConfig.grid.urls[index];
+            sheetConfig.grid.urls[index] = sheetConfig.grid.urls[newIndex];
+            sheetConfig.grid.urls[newIndex] = tempUrl;
+
+            renderImagePreviews();
+            renderPreview();
+        }
+
+        // 개별 이미지 삭제 함수
+        function removeImage(index) {
+            sheetConfig.grid.files.splice(index, 1);
+            sheetConfig.grid.urls.splice(index, 1);
+            renderImagePreviews();
+            constrainGridPosition();
+            renderPreview();
+        }
+
+        // 전체 이미지 초기화 함수
+        function clearAllImages() {
+            // 확인 메시지
+            if (confirm('모든 이미지(전신 + 표정)를 삭제하시겠습니까?')) {
+                // 전신 이미지 초기화
+                sheetConfig.baseImage.file = null;
+                sheetConfig.baseImage.url = '';
+                document.getElementById('base-image-uploader').value = '';
+
+                // 표정 이미지 초기화
+                sheetConfig.grid.files = [];
+                sheetConfig.grid.urls = [];
+                document.getElementById('face-grid-uploader').value = '';
+
+                renderImagePreviews();
+                renderPreview();
+            }
+        }
+
+        // 전체 초기화 버튼 이벤트
+        document.getElementById('clear-all-images-btn').addEventListener('click', clearAllImages);
+
+        document.getElementById('face-grid-uploader').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                // 기존 파일에 추가
+                sheetConfig.grid.files.push(...files);
+
+                let loadedCount = 0;
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        sheetConfig.grid.urls.push(e.target.result);
+                        loadedCount++;
+                        if (loadedCount === files.length) {
+                            renderImagePreviews();
+                            constrainGridPosition();
+                            renderPreview();
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            // 파일 선택 후 input 초기화 (같은 파일 다시 선택 가능하도록)
+            e.target.value = '';
+        });
+
+        // --- 3. 프리뷰 렌더링 함수 ---
+        
+        function renderPreview() {
+            // 1. 시트 크기 및 미리보기 스케일
+            sheetCanvas.style.width = `${sheetConfig.sheet.width}px`;
+            sheetCanvas.style.height = `${sheetConfig.sheet.height}px`;
+            sheetCanvas.style.maxWidth = 'none'; // max-width 제한 제거
+            sheetCanvas.style.minWidth = 'auto'; // 최소 너비 자동
+            sheetCanvas.style.transform = `scale(${sheetConfig.previewScale})`;
+
+            // 배경 설정
+            if (sheetConfig.decoration.enabled) {
+                const bgType = sheetConfig.decoration.background.type;
+                if (bgType === 'transparent') {
+                    sheetCanvas.style.backgroundColor = 'transparent';
+                    sheetCanvas.style.backgroundImage = 'none';
+                    bgImageContainer.style.display = 'none';
+                } else if (bgType === 'color') {
+                    // 색상 타입: 단색 또는 그라데이션
+                    sheetCanvas.style.backgroundImage = 'none';
+                    if (sheetConfig.decoration.background.colorType === 'gradient') {
+                        sheetCanvas.style.background = `linear-gradient(to bottom, ${sheetConfig.decoration.background.colorGradientStart}, ${sheetConfig.decoration.background.colorGradientEnd})`;
+                        sheetCanvas.style.backgroundColor = 'transparent';
+                    } else {
+                        sheetCanvas.style.background = '';
+                        sheetCanvas.style.backgroundColor = sheetConfig.decoration.background.color;
+                    }
+                    bgImageContainer.style.display = 'none';
+                } else if (bgType === 'image' && sheetConfig.decoration.background.imageUrl) {
+                    // 베이스 색상/그라데이션 설정
+                    sheetCanvas.style.backgroundImage = 'none';
+                    if (sheetConfig.decoration.background.baseType === 'gradient') {
+                        sheetCanvas.style.background = `linear-gradient(to bottom, ${sheetConfig.decoration.background.gradientStart}, ${sheetConfig.decoration.background.gradientEnd})`;
+                        sheetCanvas.style.backgroundColor = 'transparent';
+                    } else {
+                        sheetCanvas.style.background = '';
+                        sheetCanvas.style.backgroundColor = sheetConfig.decoration.background.baseColor;
+                    }
+                    
+                    // 배경 이미지 컨테이너 설정
+                    bgImageContainer.style.display = 'block';
+                    bgImageContainer.style.position = 'absolute';
+                    bgImageContainer.style.top = '0';
+                    bgImageContainer.style.left = '0';
+                    bgImageContainer.style.width = '100%';
+                    bgImageContainer.style.height = '100%';
+                    bgImageContainer.style.backgroundImage = `url(${sheetConfig.decoration.background.imageUrl})`;
+                    bgImageContainer.style.backgroundSize = `${sheetConfig.decoration.background.imageScale}%`;
+                    bgImageContainer.style.backgroundPosition = `${sheetConfig.decoration.background.imageX}px ${sheetConfig.decoration.background.imageY}px`;
+                    bgImageContainer.style.backgroundRepeat = 'no-repeat';
+                    bgImageContainer.style.opacity = sheetConfig.decoration.background.imageOpacity / 100;
+                    bgImageContainer.style.pointerEvents = 'none'; // 클릭 이벤트 차단
+                } else {
+                    bgImageContainer.style.display = 'none';
+                }
+            } else {
+                sheetCanvas.style.backgroundColor = 'white';
+                sheetCanvas.style.backgroundImage = 'none';
+                bgImageContainer.style.display = 'none';
+            } 
+
+            // 2. 전신 이미지
+            if (sheetConfig.baseImage.url) {
+                baseImageElement.src = sheetConfig.baseImage.url;
+                baseImageContainer.style.left = `${sheetConfig.baseImage.x}px`;
+                baseImageContainer.style.top = `${sheetConfig.baseImage.y}px`;
+                baseImageContainer.style.transformOrigin = 'top left';
+                baseImageContainer.style.transform = `scale(${sheetConfig.baseImage.scale})`;
+            } else {
+                baseImageElement.src = '';
+            }
+
+            // 4. 표정 그리드
+            gridContainer.style.left = `${sheetConfig.grid.x}px`;
+            gridContainer.style.top = `${sheetConfig.grid.y}px`;
+            
+            const itemWidth = sheetConfig.faceBox.w;
+            gridContainer.style.gridTemplateColumns = `repeat(${sheetConfig.grid.columns}, ${itemWidth}px)`;
+            gridContainer.style.gap = `${sheetConfig.grid.gap}px`;
+
+            // 5. 표정 '창문' 및 '스프라이트' 생성
+            gridContainer.innerHTML = '';
+            sheetConfig.grid.urls.forEach(faceUrl => {
+                const faceWindow = document.createElement('div');
+                faceWindow.className = 'face-window';
+                if (sheetConfig.grid.roundCorners) {
+                    faceWindow.classList.add('rounded');
+                }
+                
+                faceWindow.style.width = `${sheetConfig.faceBox.w}px`;
+                faceWindow.style.height = `${sheetConfig.faceBox.h}px`;
+
+                const faceSprite = document.createElement('img');
+                faceSprite.className = 'face-sprite';
+                faceSprite.src = faceUrl;
+                
+                faceSprite.style.left = `-${sheetConfig.faceBox.x}px`;
+                faceSprite.style.top = `-${sheetConfig.faceBox.y}px`;
+                
+                const faceSpriteScale = sheetConfig.grid.itemScale;
+                faceSprite.style.transform = `scale(${faceSpriteScale})`;
+
+                faceWindow.appendChild(faceSprite);
+                gridContainer.appendChild(faceWindow);
+            });
+
+            // 6. 꾸미기 요소 렌더링
+            // 기존 꾸미기 요소 제거
+            const existingDecorations = sheetCanvas.querySelectorAll('.decoration-element');
+            existingDecorations.forEach(el => el.remove());
+
+            if (sheetConfig.decoration.enabled) {
+                
+                // --- [시작] 캐릭터 이름 ---
+                if (sheetConfig.decoration.characterName.text) {
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'decoration-element character-name';
+                    nameEl.textContent = sheetConfig.decoration.characterName.text;
+
+                    const nameStyle = sheetConfig.decoration.characterName;
+                    const useFont = nameStyle.useCustomFont ? nameStyle.fontFamily : sheetConfig.decoration.globalFont.fontFamily;
+
+                    // 1. 기본 스타일 정의
+                    let css = `
+                        position: absolute;
+                        top: ${nameStyle.y}px;
+                        left: ${nameStyle.x}px;
+                        font-size: ${nameStyle.fontSize}px;
+                        font-family: '${useFont}', Arial, sans-serif;
+                        font-weight: ${nameStyle.fontWeight};
+                        color: ${nameStyle.color};
+                        transform: rotate(${nameStyle.rotate}deg);
+                        text-align: ${nameStyle.textAlign};
+                        white-space: nowrap;
+                        z-index: 100;
+                    `;
+
+                    // 2. 그라데이션 적용
+                    if (nameStyle.gradient.enabled) {
+                        css += `
+                            background: linear-gradient(to right, ${nameStyle.gradient.start}, ${nameStyle.gradient.end});
+                            -webkit-background-clip: text;
+                            background-clip: text;
+                            color: transparent;
+                        `;
+                    }
+
+                    // 3. 외곽선 적용
+                    if (nameStyle.stroke.enabled) {
+                        css += `
+                            -webkit-text-stroke-width: ${nameStyle.stroke.width}px;
+                            -webkit-text-stroke-color: ${nameStyle.stroke.color};
+                            paint-order: stroke fill;
+                            -webkit-paint-order: stroke fill;
+                        `;
+                    }
+
+                    // 4. 그림자 적용
+                    if (nameStyle.shadow.enabled) {
+                        css += `
+                            text-shadow: ${nameStyle.shadow.x}px ${nameStyle.shadow.y}px ${nameStyle.shadow.blur}px ${nameStyle.shadow.color};
+                        `;
+                    } else {
+                        css += ` text-shadow: none; `;
+                    }
+
+                    // 최종 스타일 적용
+                    nameEl.style.cssText = css;
+                    sheetCanvas.appendChild(nameEl);
+                }
+                // --- [끝] 캐릭터 이름 ---
+
+                // --- [시작] 캐릭터 설명 ---
+                if (sheetConfig.decoration.characterDescription.text) {
+                    const descEl = document.createElement('div');
+                    descEl.className = 'decoration-element character-description';
+                    descEl.textContent = sheetConfig.decoration.characterDescription.text;
+
+                    const descStyle = sheetConfig.decoration.characterDescription;
+                    const useFont = descStyle.useCustomFont ? descStyle.fontFamily : sheetConfig.decoration.globalFont.fontFamily;
+
+                    descEl.style.cssText = `
+                        position: absolute;
+                        top: ${descStyle.y}px;
+                        left: ${descStyle.x}px;
+                        font-size: ${descStyle.fontSize}px;
+                        font-family: '${useFont}', Arial, sans-serif;
+                        font-weight: ${descStyle.fontWeight};
+                        color: ${descStyle.color};
+                        text-align: ${descStyle.textAlign};
+                        white-space: pre-wrap;
+                        z-index: 100;
+                    `;
+                    sheetCanvas.appendChild(descEl);
+                }
+                // --- [끝] 캐릭터 설명 ---
+
+
+                // 워터마크
+                if (sheetConfig.decoration.watermark.text) {
+                    const watermarkEl = document.createElement('div');
+                    watermarkEl.className = 'decoration-element watermark';
+                    watermarkEl.textContent = sheetConfig.decoration.watermark.text;
+
+                    const wmStyle = sheetConfig.decoration.watermark;
+                    const globalFont = sheetConfig.decoration.globalFont.fontFamily;
+
+                    // 1. 기본 스타일 정의
+                    let css = `
+                        position: absolute;
+                        top: ${wmStyle.y}px;
+                        left: ${wmStyle.x}px;
+                        font-size: ${wmStyle.fontSize}px;
+                        font-family: '${globalFont}', Arial, sans-serif;
+                        font-weight: ${wmStyle.fontWeight};
+                        color: ${wmStyle.color};
+                        transform: rotate(${wmStyle.rotate}deg);
+                        z-index: 100;
+                        white-space: nowrap;
+                    `;
+
+                    // 2. 그라데이션 적용
+                    if (wmStyle.gradient.enabled) {
+                        css += `
+                            background: linear-gradient(to right, ${wmStyle.gradient.start}, ${wmStyle.gradient.end});
+                            -webkit-background-clip: text;
+                            background-clip: text;
+                            color: transparent;
+                        `;
+                    }
+
+                    // 3. 외곽선 적용
+                    if (wmStyle.stroke.enabled) {
+                        css += `
+                            -webkit-text-stroke-width: ${wmStyle.stroke.width}px;
+                            -webkit-text-stroke-color: ${wmStyle.stroke.color};
+                            paint-order: stroke fill;
+                            -webkit-paint-order: stroke fill;
+                        `;
+                    }
+
+                    // 4. 그림자 적용
+                    if (wmStyle.shadow.enabled) {
+                        css += `
+                            text-shadow: ${wmStyle.shadow.x}px ${wmStyle.shadow.y}px ${wmStyle.shadow.blur}px ${wmStyle.shadow.color};
+                        `;
+                    } else {
+                        css += ` text-shadow: none; `;
+                    }
+
+                    watermarkEl.style.cssText = css;
+                    sheetCanvas.appendChild(watermarkEl);
+                }
+
+                // 로고
+                if (sheetConfig.decoration.logo.url) {
+                    const logoEl = document.createElement('img');
+                    logoEl.className = 'decoration-element logo';
+                    logoEl.src = sheetConfig.decoration.logo.url;
+
+                    logoEl.style.cssText = `
+                        position: absolute;
+                        left: ${sheetConfig.decoration.logo.x}px;
+                        top: ${sheetConfig.decoration.logo.y}px;
+                        max-width: ${sheetConfig.decoration.logo.maxWidth}px;
+                        max-height: ${sheetConfig.decoration.logo.maxWidth}px;
+                        z-index: 100;
+                    `;
+                    sheetCanvas.appendChild(logoEl);
+                }
+
+                // 표정 이름
+                if (sheetConfig.decoration.expressionLabels.enabled && sheetConfig.decoration.expressionLabels.names.length > 0) {
+                    const labels = sheetConfig.decoration.expressionLabels.names;
+                    const exprStyle = sheetConfig.decoration.expressionLabels;
+
+                    // 그리드 설정 계산
+                    const columns = sheetConfig.grid.columns;
+                    const itemWidth = sheetConfig.faceBox.w;
+                    const itemHeight = sheetConfig.faceBox.h;
+                    const gap = sheetConfig.grid.gap;
+                    const gridX = sheetConfig.grid.x;
+                    const gridY = sheetConfig.grid.y;
+
+                    for (let i = 0; i < Math.min(labels.length, sheetConfig.grid.urls.length); i++) {
+                        if (labels[i]) {
+                            // 그리드 내 위치 계산
+                            const row = Math.floor(i / columns);
+                            const col = i % columns;
+
+                            // 각 표정 박스의 절대 위치 계산
+                            const boxX = gridX + col * (itemWidth + gap);
+                            const boxY = gridY + row * (itemHeight + gap);
+                            const boxCenterX = boxX + itemWidth / 2;
+                            const boxBottomY = boxY + itemHeight;
+
+                            const labelEl = document.createElement('div');
+                            labelEl.className = 'decoration-element expression-label';
+                            labelEl.textContent = labels[i];
+
+                            const globalFont = sheetConfig.decoration.globalFont.fontFamily;
+
+                            // 1. 기본 스타일 정의
+                            let transformValue = 'translateX(-50%)';
+                            let leftPosition = boxCenterX + exprStyle.offsetX;
+
+                            // 정렬에 따른 위치 조정
+                            if (exprStyle.textAlign === 'left') {
+                                transformValue = 'none';
+                                leftPosition = boxX + exprStyle.offsetX;
+                            } else if (exprStyle.textAlign === 'right') {
+                                transformValue = 'translateX(-100%)';
+                                leftPosition = boxX + itemWidth + exprStyle.offsetX;
+                            }
+
+                            let css = `
+                                position: absolute;
+                                left: ${leftPosition}px;
+                                top: ${boxBottomY + exprStyle.offsetY}px;
+                                transform: ${transformValue};
+                                font-size: ${exprStyle.fontSize}px;
+                                font-family: '${globalFont}', Arial, sans-serif;
+                                font-weight: ${exprStyle.fontWeight};
+                                color: ${exprStyle.color};
+                                text-align: ${exprStyle.textAlign};
+                                white-space: nowrap;
+                                z-index: 101;
+                            `;
+
+                            // 2. 그라데이션 적용
+                            if (exprStyle.gradient.enabled) {
+                                css += `
+                                    background: linear-gradient(to right, ${exprStyle.gradient.start}, ${exprStyle.gradient.end});
+                                    -webkit-background-clip: text;
+                                    background-clip: text;
+                                    color: transparent;
+                                `;
+                            }
+
+                            // 3. 외곽선 적용
+                            if (exprStyle.stroke.enabled) {
+                                css += `
+                                    -webkit-text-stroke-width: ${exprStyle.stroke.width}px;
+                                    -webkit-text-stroke-color: ${exprStyle.stroke.color};
+                                    paint-order: stroke fill;
+                                    -webkit-paint-order: stroke fill;
+                                `;
+                            }
+
+                            // 4. 그림자 적용
+                            if (exprStyle.shadow.enabled) {
+                                css += `
+                                    text-shadow: ${exprStyle.shadow.x}px ${exprStyle.shadow.y}px ${exprStyle.shadow.blur}px ${exprStyle.shadow.color};
+                                `;
+                            } else {
+                                css += ` text-shadow: none; `;
+                            }
+
+                            labelEl.style.cssText = css;
+                            sheetCanvas.appendChild(labelEl);
+                        }
+                    }
+                }
+            }
+
+            // 설정 자동 저장
+            saveSettings();
+        }
+
+        // --- 4. 표정 그리드 드래그 이동 로직 ---
+        
+        let isDraggingGrid = false;
+        let dragStartX, dragStartY;
+        let gridStartX, gridStartY;
+
+        gridContainer.addEventListener('mousedown', (e) => {
+            isDraggingGrid = true;
+            gridContainer.style.cursor = 'grabbing';
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            gridStartX = sheetConfig.grid.x;
+            gridStartY = sheetConfig.grid.y;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingGrid) return;
+            const deltaX = e.clientX - dragStartX;
+            const deltaY = e.clientY - dragStartY;
+            let newGridX = gridStartX + deltaX;
+            let newGridY = gridStartY + deltaY;
+
+            // 표정시트가 시트 영역을 벗어나지 않도록 제약
+            const gridWidth = sheetConfig.grid.columns * sheetConfig.faceBox.w +
+                             (sheetConfig.grid.columns - 1) * sheetConfig.grid.gap;
+            const gridHeight = Math.ceil(sheetConfig.grid.urls.length / sheetConfig.grid.columns) * sheetConfig.faceBox.h +
+                              (Math.ceil(sheetConfig.grid.urls.length / sheetConfig.grid.columns) - 1) * sheetConfig.grid.gap;
+
+            newGridX = Math.max(0, Math.min(newGridX, sheetConfig.sheet.width - gridWidth));
+            newGridY = Math.max(0, Math.min(newGridY, sheetConfig.sheet.height - gridHeight));
+
+            sheetConfig.grid.x = newGridX;
+            sheetConfig.grid.y = newGridY;
+
+            document.getElementById('grid-x').value = newGridX.toFixed(0);
+            document.getElementById('grid-y').value = newGridY.toFixed(0);
+            document.getElementById('grid-x-slider').value = newGridX.toFixed(0);
+            document.getElementById('grid-y-slider').value = newGridY.toFixed(0);
+
+            gridContainer.style.left = `${newGridX}px`;
+            gridContainer.style.top = `${newGridY}px`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDraggingGrid = false;
+            gridContainer.style.cursor = 'move';
+        });
+
+        // --- 5. 다운로드 버튼 이벤트 리스너 ---
+        
+        document.getElementById('download-btn').addEventListener('click', () => {
+            const target = document.getElementById('sheet-canvas');
+            
+            // 다운로드 직전에 배경 처리
+            const originalBackgroundColor = target.style.backgroundColor;
+            const originalBackgroundImage = target.style.backgroundImage;
+            const originalBorder = target.style.border;
+
+            // 다운로드 전에 스케일 제거하여 실제 크기로 렌더링
+            const originalTransform = target.style.transform;
+            target.style.transform = 'none';
+            target.style.border = 'none'; // 점선 테두리 제거
+            
+            // 배경 설정 (renderPreview에서 이미 설정되어 있지만 확실히 하기 위해)
+            if (sheetConfig.decoration.enabled) {
+                const bgType = sheetConfig.decoration.background.type;
+                if (bgType === 'transparent') {
+                    target.style.backgroundColor = 'transparent';
+                    target.style.backgroundImage = 'none';
+                    target.style.background = '';
+                } else if (bgType === 'color') {
+                    if (sheetConfig.decoration.background.colorType === 'gradient') {
+                        target.style.background = `linear-gradient(to bottom, ${sheetConfig.decoration.background.colorGradientStart}, ${sheetConfig.decoration.background.colorGradientEnd})`;
+                        target.style.backgroundColor = 'transparent';
+                    } else {
+                        target.style.backgroundColor = sheetConfig.decoration.background.color;
+                        target.style.background = '';
+                    }
+                    target.style.backgroundImage = 'none';
+                } else if (bgType === 'image' && sheetConfig.decoration.background.imageUrl) {
+                    if (sheetConfig.decoration.background.baseType === 'gradient') {
+                        target.style.background = `linear-gradient(to bottom, ${sheetConfig.decoration.background.gradientStart}, ${sheetConfig.decoration.background.gradientEnd})`;
+                        target.style.backgroundColor = 'transparent';
+                    } else {
+                        target.style.backgroundColor = sheetConfig.decoration.background.baseColor;
+                        target.style.background = '';
+                    }
+                    target.style.backgroundImage = 'none';
+                }
+            } else {
+                target.style.backgroundColor = 'white';
+                target.style.backgroundImage = 'none';
+                target.style.background = '';
+            }
+
+
+            html2canvas(target, {
+                backgroundColor: null, // canvas의 배경을 null로 설정하여 투명하게 만듦 (DOM의 배경을 따름)
+                useCORS: true,
+                logging: true,
+                width: sheetConfig.sheet.width,
+                height: sheetConfig.sheet.height,
+                scale: 1 // 스케일을 1로 설정하여 실제 크기로 렌더링
+            }).then(canvas => {
+                // 다운로드 완료 후 원래 상태로 복원
+                target.style.backgroundColor = originalBackgroundColor;
+                target.style.backgroundImage = originalBackgroundImage;
+                target.style.transform = originalTransform;
+                target.style.border = originalBorder;
+
+                const imageSrc = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = imageSrc;
+                link.download = 'character_sheet.png';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }).catch(err => {
+                console.error("이미지 생성 중 오류 발생:", err);
+                alert("이미지 생성에 실패했습니다. 콘솔을 확인해주세요.");
+                // 오류 발생 시에도 원래 상태로 복원
+                target.style.backgroundColor = originalBackgroundColor;
+                target.style.backgroundImage = originalBackgroundImage;
+                target.style.transform = originalTransform;
+            });
+        });
+
+        // --- 초기 렌더링 ---
+        // 기본 폰트 로드 (첫 번째 폰트 기본값)
+        const defaultFont = document.getElementById('font-list').value;
+        if (fonts[defaultFont]) {
+            loadFont(fonts[defaultFont]);
+            sheetConfig.decoration.characterName.fontFamily = defaultFont;
+        }
+
+        renderPreview();
+        inputs.forEach(input => {
+             if (input.type === 'number') {
+                const sliderInput = document.getElementById(input.id + '-slider');
+                if (sliderInput) {
+                    sliderInput.value = input.value;
+                }
+             }
+        });
+        
+        // (v8) 새로 추가된 슬라이더들도 초기화
+        const decorationSliders = [
+            'name-rotate', 'name-stroke-width', Models,
+            'name-shadow-x', 'name-shadow-y', 'name-shadow-blur'
+        ];
+        decorationSliders.forEach(id => {
+            const numberInput = document.getElementById(id);
+            if (numberInput) {
+                const sliderInput = document.getElementById(id + '-slider');
+                if (sliderInput) {
+                    sliderInput.value = numberInput.value;
+                }
+            }
+        });
+        // (v8) 토글 상태에 따라 옵션 패널 초기화
+        document.getElementById('name-gradient-options').style.display =
+            document.getElementById('name-gradient-enable').checked ? 'flex' : 'none';
+        document.getElementById('name-stroke-options').style.display =
+            document.getElementById('name-stroke-enable').checked ? 'block' : 'none';
+        document.getElementById('name-shadow-options').style.display =
+            document.getElementById('name-shadow-enable').checked ? 'block' : 'none';
+
+        // 워터마크 토글 초기화
+        document.getElementById('watermark-gradient-options').style.display =
+            document.getElementById('watermark-gradient-enable').checked ? 'flex' : 'none';
+        document.getElementById('watermark-stroke-options').style.display =
+            document.getElementById('watermark-stroke-enable').checked ? 'block' : 'none';
+        document.getElementById('watermark-shadow-options').style.display =
+            document.getElementById('watermark-shadow-enable').checked ? 'block' : 'none';
+
+        // 표정 이름 토글 초기화
+        document.getElementById('expression-labels-settings').style.display =
+            document.getElementById('enable-expression-labels').checked ? 'block' : 'none';
+        document.getElementById('expr-gradient-options').style.display =
+            document.getElementById('expr-gradient-enable').checked ? 'flex' : 'none';
+        document.getElementById('expr-stroke-options').style.display =
+            document.getElementById('expr-stroke-enable').checked ? 'block' : 'none';
+        document.getElementById('expr-shadow-options').style.display =
+            document.getElementById('expr-shadow-enable').checked ? 'block' : 'none';
+
+        // --- 설정 초기화 버튼 이벤트 ---
+        document.getElementById('reset-settings-btn').addEventListener('click', resetSettings);
+
+        // --- 페이지 로드 시 저장된 설정 복원 ---
+        window.addEventListener('DOMContentLoaded', () => {
+            if (loadSettings()) {
+                console.log('저장된 설정을 복원했습니다.');
+                // UI 요소들을 복원된 설정값으로 업데이트
+                document.getElementById('sheet-width').value = sheetConfig.sheet.width;
+                document.getElementById('sheet-width-slider').value = sheetConfig.sheet.width;
+                document.getElementById('sheet-height').value = sheetConfig.sheet.height;
+                document.getElementById('sheet-height-slider').value = sheetConfig.sheet.height;
+                document.getElementById('preview-scale').value = Math.round(sheetConfig.previewScale * 100);
+                document.getElementById('preview-scale-slider').value = Math.round(sheetConfig.previewScale * 100);
+
+                document.getElementById('face-box-x').value = sheetConfig.faceBox.x;
+                document.getElementById('face-box-x-slider').value = sheetConfig.faceBox.x;
+                document.getElementById('face-box-y').value = sheetConfig.faceBox.y;
+                document.getElementById('face-box-y-slider').value = sheetConfig.faceBox.y;
+                document.getElementById('face-box-w').value = sheetConfig.faceBox.w;
+                document.getElementById('face-box-w-slider').value = sheetConfig.faceBox.w;
+                document.getElementById('face-box-h').value = sheetConfig.faceBox.h;
+                document.getElementById('face-box-h-slider').value = sheetConfig.faceBox.h;
+
+                document.getElementById('grid-x').value = sheetConfig.grid.x;
+                document.getElementById('grid-x-slider').value = sheetConfig.grid.x;
+                document.getElementById('grid-y').value = sheetConfig.grid.y;
+                document.getElementById('grid-y-slider').value = sheetConfig.grid.y;
+                document.getElementById('grid-columns').value = sheetConfig.grid.columns;
+                document.getElementById('grid-columns-slider').value = sheetConfig.grid.columns;
+                document.getElementById('grid-gap').value = sheetConfig.grid.gap;
+                document.getElementById('grid-gap-slider').value = sheetConfig.grid.gap;
+                document.getElementById('grid-item-scale').value = Math.round(sheetConfig.grid.itemScale * 100);
+                document.getElementById('grid-item-scale-slider').value = Math.round(sheetConfig.grid.itemScale * 100);
+                document.getElementById('round-face-boxes').checked = sheetConfig.grid.roundCorners;
+
+                // 꾸미기 설정 복원
+                document.getElementById('enable-decoration').checked = sheetConfig.decoration.enabled;
+                if (sheetConfig.decoration.enabled) {
+                    document.getElementById('decoration-panel').classList.remove('inactive');
+                }
+
+                renderPreview();
+            }
+        });
+    </script>
+</body>
+</html>
