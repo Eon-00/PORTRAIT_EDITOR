@@ -3032,21 +3032,60 @@
         });
 
         // --- 5. 다운로드 버튼 이벤트 리스너 ---
-        
+
         document.getElementById('download-btn').addEventListener('click', () => {
             const target = document.getElementById('sheet-canvas');
-            
-            // 다운로드 직전에 배경 처리
+
+            // 원본 상태 저장
             const originalBackgroundColor = target.style.backgroundColor;
             const originalBackgroundImage = target.style.backgroundImage;
+            const originalBackground = target.style.background;
             const originalBorder = target.style.border;
-
-            // 다운로드 전에 스케일 제거하여 실제 크기로 렌더링
             const originalTransform = target.style.transform;
+
+            // 텍스트 그라데이션 요소들의 원본 스타일 저장
+            const textElements = target.querySelectorAll('.decoration-element');
+            const originalStyles = [];
+            textElements.forEach(el => {
+                originalStyles.push({
+                    element: el,
+                    background: el.style.background,
+                    webkitBackgroundClip: el.style.webkitBackgroundClip,
+                    backgroundClip: el.style.backgroundClip,
+                    color: el.style.color
+                });
+            });
+
+            // 다운로드 전에 스케일 제거 및 테두리 제거
             target.style.transform = 'none';
-            target.style.border = 'none'; // 점선 테두리 제거
-            
-            // 배경 설정 (renderPreview에서 이미 설정되어 있지만 확실히 하기 위해)
+            target.style.border = 'none';
+
+            // 텍스트 그라데이션을 일반 색상으로 임시 변경 (html2canvas 호환성)
+            textElements.forEach(el => {
+                // 캐릭터 이름 그라데이션 처리
+                if (el.classList.contains('character-name') && sheetConfig.decoration.characterName.gradient.enabled) {
+                    el.style.background = 'none';
+                    el.style.webkitBackgroundClip = 'unset';
+                    el.style.backgroundClip = 'unset';
+                    el.style.color = sheetConfig.decoration.characterName.gradient.start; // 시작 색상 사용
+                }
+                // 워터마크 그라데이션 처리
+                if (el.classList.contains('watermark') && sheetConfig.decoration.watermark.gradient.enabled) {
+                    el.style.background = 'none';
+                    el.style.webkitBackgroundClip = 'unset';
+                    el.style.backgroundClip = 'unset';
+                    el.style.color = sheetConfig.decoration.watermark.gradient.start;
+                }
+                // 표정 이름 그라데이션 처리
+                if (el.classList.contains('expression-label') && sheetConfig.decoration.expressionLabels.gradient.enabled) {
+                    el.style.background = 'none';
+                    el.style.webkitBackgroundClip = 'unset';
+                    el.style.backgroundClip = 'unset';
+                    el.style.color = sheetConfig.decoration.expressionLabels.gradient.start;
+                }
+            });
+
+            // 배경 설정
             if (sheetConfig.decoration.enabled) {
                 const bgType = sheetConfig.decoration.background.type;
                 if (bgType === 'transparent') {
@@ -3056,7 +3095,7 @@
                 } else if (bgType === 'color') {
                     if (sheetConfig.decoration.background.colorType === 'gradient') {
                         target.style.background = `linear-gradient(to bottom, ${sheetConfig.decoration.background.colorGradientStart}, ${sheetConfig.decoration.background.colorGradientEnd})`;
-                        target.style.backgroundColor = 'transparent';
+                        target.style.backgroundColor = '';
                     } else {
                         target.style.backgroundColor = sheetConfig.decoration.background.color;
                         target.style.background = '';
@@ -3065,7 +3104,7 @@
                 } else if (bgType === 'image' && sheetConfig.decoration.background.imageUrl) {
                     if (sheetConfig.decoration.background.baseType === 'gradient') {
                         target.style.background = `linear-gradient(to bottom, ${sheetConfig.decoration.background.gradientStart}, ${sheetConfig.decoration.background.gradientEnd})`;
-                        target.style.backgroundColor = 'transparent';
+                        target.style.backgroundColor = '';
                     } else {
                         target.style.backgroundColor = sheetConfig.decoration.background.baseColor;
                         target.style.background = '';
@@ -3078,36 +3117,55 @@
                 target.style.background = '';
             }
 
-
             html2canvas(target, {
-                backgroundColor: null, // canvas의 배경을 null로 설정하여 투명하게 만듦 (DOM의 배경을 따름)
+                backgroundColor: null,
                 useCORS: true,
-                logging: true,
+                logging: false,
                 width: sheetConfig.sheet.width,
                 height: sheetConfig.sheet.height,
-                scale: 1 // 스케일을 1로 설정하여 실제 크기로 렌더링
+                scale: 1,
+                allowTaint: true
             }).then(canvas => {
-                // 다운로드 완료 후 원래 상태로 복원
+                // 원본 상태 복원
                 target.style.backgroundColor = originalBackgroundColor;
                 target.style.backgroundImage = originalBackgroundImage;
+                target.style.background = originalBackground;
                 target.style.transform = originalTransform;
                 target.style.border = originalBorder;
+
+                // 텍스트 요소들 원본 스타일 복원
+                originalStyles.forEach(item => {
+                    item.element.style.background = item.background;
+                    item.element.style.webkitBackgroundClip = item.webkitBackgroundClip;
+                    item.element.style.backgroundClip = item.backgroundClip;
+                    item.element.style.color = item.color;
+                });
 
                 const imageSrc = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.href = imageSrc;
                 link.download = 'character_sheet.png';
-                
+
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             }).catch(err => {
                 console.error("이미지 생성 중 오류 발생:", err);
                 alert("이미지 생성에 실패했습니다. 콘솔을 확인해주세요.");
-                // 오류 발생 시에도 원래 상태로 복원
+
+                // 오류 발생 시에도 원본 상태 복원
                 target.style.backgroundColor = originalBackgroundColor;
                 target.style.backgroundImage = originalBackgroundImage;
+                target.style.background = originalBackground;
                 target.style.transform = originalTransform;
+                target.style.border = originalBorder;
+
+                originalStyles.forEach(item => {
+                    item.element.style.background = item.background;
+                    item.element.style.webkitBackgroundClip = item.webkitBackgroundClip;
+                    item.element.style.backgroundClip = item.backgroundClip;
+                    item.element.style.color = item.color;
+                });
             });
         });
 
