@@ -863,12 +863,6 @@
                 </select>
             </div>
 
-            <div class="input-group-linked">
-                <label for="name-rotate">회전 (deg)</label>
-                <input type="range" id="name-rotate-slider" value="0" min="-45" max="45" step="1">
-                <input type="number" id="name-rotate" value="0" min="-45" max="45">
-            </div>
-
             <div class="input-group">
                 <div class="checkbox-group" style="padding: 0; background: none;">
                     <input type="checkbox" id="name-shadow-enable">
@@ -897,26 +891,14 @@
 
             <div class="input-group">
                 <div class="checkbox-group" style="padding: 0; background: none;">
-                    <input type="checkbox" id="name-gradient-enable">
-                    <label for="name-gradient-enable">텍스트 그라데이션</label>
-                </div>
-                <div id="name-gradient-options" style="display: none; margin-top: 10px; display: flex; gap: 10px;">
-                    <label style="font-size: 0.9em; flex-basis: 100%;">시작 → 끝</label>
-                    <input type="color" id="name-gradient-start" value="#FF0000" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
-                    <input type="color" id="name-gradient-end" value="#0000FF" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <div class="checkbox-group" style="padding: 0; background: none;">
                     <input type="checkbox" id="name-stroke-enable">
                     <label for="name-stroke-enable">텍스트 외곽선</label>
                 </div>
                 <div id="name-stroke-options" style="display: none; margin-top: 10px;">
                     <div class="input-group-linked">
                         <label for="name-stroke-width">두께</label>
-                        <input type="range" id="name-stroke-width-slider" value="1" min="1" max="10">
-                        <input type="number" id="name-stroke-width" value="1" min="1" max="10">
+                        <input type="range" id="name-stroke-width-slider" value="1" min="1" max="5">
+                        <input type="number" id="name-stroke-width" value="1" min="1" max="5">
                     </div>
                     <label for="name-stroke-color" style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px; margin-top: 10px;">색상</label>
                     <input type="color" id="name-stroke-color" value="#000000" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
@@ -1126,12 +1108,6 @@
                 </select>
             </div>
 
-            <div class="input-group-linked">
-                <label for="watermark-rotate">회전 (deg)</label>
-                <input type="range" id="watermark-rotate-slider" value="0" min="-45" max="45" step="1">
-                <input type="number" id="watermark-rotate" value="0" min="-45" max="45">
-            </div>
-
             <div class="input-group">
                 <div class="checkbox-group" style="padding: 0; background: none;">
                     <input type="checkbox" id="watermark-shadow-enable">
@@ -1160,26 +1136,14 @@
 
             <div class="input-group">
                 <div class="checkbox-group" style="padding: 0; background: none;">
-                    <input type="checkbox" id="watermark-gradient-enable">
-                    <label for="watermark-gradient-enable">텍스트 그라데이션</label>
-                </div>
-                <div id="watermark-gradient-options" style="display: none; margin-top: 10px; display: flex; gap: 10px;">
-                    <label style="font-size: 0.9em; flex-basis: 100%;">시작 → 끝</label>
-                    <input type="color" id="watermark-gradient-start" value="#FF0000" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
-                    <input type="color" id="watermark-gradient-end" value="#0000FF" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <div class="checkbox-group" style="padding: 0; background: none;">
                     <input type="checkbox" id="watermark-stroke-enable">
                     <label for="watermark-stroke-enable">텍스트 외곽선</label>
                 </div>
                 <div id="watermark-stroke-options" style="display: none; margin-top: 10px;">
                     <div class="input-group-linked">
                         <label for="watermark-stroke-width">두께</label>
-                        <input type="range" id="watermark-stroke-width-slider" value="1" min="1" max="10">
-                        <input type="number" id="watermark-stroke-width" value="1" min="1" max="10">
+                        <input type="range" id="watermark-stroke-width-slider" value="1" min="1" max="5">
+                        <input type="number" id="watermark-stroke-width" value="1" min="1" max="5">
                     </div>
                     <label for="watermark-stroke-color" style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px; margin-top: 10px;">색상</label>
                     <input type="color" id="watermark-stroke-color" value="#000000" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
@@ -1271,26 +1235,14 @@
 
                 <div class="input-group">
                     <div class="checkbox-group" style="padding: 0; background: none;">
-                        <input type="checkbox" id="expr-gradient-enable">
-                        <label for="expr-gradient-enable">텍스트 그라데이션</label>
-                    </div>
-                    <div id="expr-gradient-options" style="display: none; margin-top: 10px; display: flex; gap: 10px;">
-                        <label style="font-size: 0.9em; flex-basis: 100%;">시작 → 끝</label>
-                        <input type="color" id="expr-gradient-start" value="#FF0000" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
-                        <input type="color" id="expr-gradient-end" value="#0000FF" style="width: 50%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <div class="checkbox-group" style="padding: 0; background: none;">
                         <input type="checkbox" id="expr-stroke-enable">
                         <label for="expr-stroke-enable">텍스트 외곽선</label>
                     </div>
                     <div id="expr-stroke-options" style="display: none; margin-top: 10px;">
                         <div class="input-group-linked">
                             <label for="expr-stroke-width">두께</label>
-                            <input type="range" id="expr-stroke-width-slider" value="1" min="1" max="10">
-                            <input type="number" id="expr-stroke-width" value="1" min="1" max="10">
+                            <input type="range" id="expr-stroke-width-slider" value="1" min="1" max="5">
+                            <input type="number" id="expr-stroke-width" value="1" min="1" max="5">
                         </div>
                         <label for="expr-stroke-color" style="font-weight: 500; font-size: 0.9em; color: #495057; margin-bottom: 8px; margin-top: 10px;">색상</label>
                         <input type="color" id="expr-stroke-color" value="#000000" style="width: 100%; height: 40px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer;">
@@ -1412,18 +1364,11 @@
                     color: '#333333',
 
                     fontWeight: 'bold',
-                    rotate: 0,
 
                     stroke: {
                         enabled: false,
                         width: 1,
                         color: '#000000'
-                    },
-
-                    gradient: {
-                        enabled: false,
-                        start: '#FF0000',
-                        end: '#0000FF'
                     },
 
                     shadow: {
@@ -1455,7 +1400,6 @@
                     y: 20,
                     color: '#999999',
                     fontWeight: 'normal',
-                    rotate: 0,
 
                     shadow: {
                         enabled: false,
@@ -1463,12 +1407,6 @@
                         y: 1,
                         blur: 2,
                         color: '#FFFFFF'
-                    },
-
-                    gradient: {
-                        enabled: false,
-                        start: '#FF0000',
-                        end: '#0000FF'
                     },
 
                     stroke: {
@@ -1495,12 +1433,6 @@
                         y: 1,
                         blur: 2,
                         color: '#FFFFFF'
-                    },
-
-                    gradient: {
-                        enabled: false,
-                        start: '#FF0000',
-                        end: '#0000FF'
                     },
 
                     stroke: {
@@ -1977,17 +1909,23 @@
             }
         });
 
-        document.getElementById('name-font-url').addEventListener('input', (e) => {
-            const url = e.target.value.trim();
-            sheetConfig.decoration.characterName.fontUrl = url;
-            loadFont(url);
-            renderPreview();
-        });
+        const nameFontUrlInput = document.getElementById('name-font-url');
+        if (nameFontUrlInput) {
+            nameFontUrlInput.addEventListener('input', (e) => {
+                const url = e.target.value.trim();
+                sheetConfig.decoration.characterName.fontUrl = url;
+                loadFont(url);
+                renderPreview();
+            });
+        }
 
-        document.getElementById('name-font-family').addEventListener('input', (e) => {
-            sheetConfig.decoration.characterName.fontFamily = e.target.value || 'Arial';
-            renderPreview();
-        });
+        const nameFontFamilyInput = document.getElementById('name-font-family');
+        if (nameFontFamilyInput) {
+            nameFontFamilyInput.addEventListener('input', (e) => {
+                sheetConfig.decoration.characterName.fontFamily = e.target.value || 'Arial';
+                renderPreview();
+            });
+        }
 
         document.getElementById('name-align').addEventListener('change', (e) => {
             sheetConfig.decoration.characterName.textAlign = e.target.value;
@@ -2094,28 +2032,7 @@
             renderPreview();
         });
 
-        // 회전 (슬라이더 + 숫자)
-        linkSliderToNumber('name-rotate', 'name-rotate-slider', (value) => {
-            sheetConfig.decoration.characterName.rotate = value;
-            renderPreview();
-        });
-        
         // 그라데이션 토글
-        document.getElementById('name-gradient-enable').addEventListener('change', (e) => {
-            const enabled = e.target.checked;
-            sheetConfig.decoration.characterName.gradient.enabled = enabled;
-            document.getElementById('name-gradient-options').style.display = enabled ? 'flex' : 'none';
-            renderPreview();
-        });
-        // 그라데이션 색상
-        document.getElementById('name-gradient-start').addEventListener('input', (e) => {
-            sheetConfig.decoration.characterName.gradient.start = e.target.value;
-            renderPreview();
-        });
-        document.getElementById('name-gradient-end').addEventListener('input', (e) => {
-            sheetConfig.decoration.characterName.gradient.end = e.target.value;
-            renderPreview();
-        });
 
         // 외곽선 토글
         document.getElementById('name-stroke-enable').addEventListener('change', (e) => {
@@ -2198,11 +2115,6 @@
             renderPreview();
         });
 
-        linkSliderToNumber('watermark-rotate', 'watermark-rotate-slider', (value) => {
-            sheetConfig.decoration.watermark.rotate = value;
-            renderPreview();
-        });
-
         // --- 워터마크 그림자 ---
         document.getElementById('watermark-shadow-enable').addEventListener('change', (e) => {
             const enabled = e.target.checked;
@@ -2231,23 +2143,6 @@
             renderPreview();
         });
 
-        // --- 워터마크 그라데이션 ---
-        document.getElementById('watermark-gradient-enable').addEventListener('change', (e) => {
-            const enabled = e.target.checked;
-            sheetConfig.decoration.watermark.gradient.enabled = enabled;
-            document.getElementById('watermark-gradient-options').style.display = enabled ? 'flex' : 'none';
-            renderPreview();
-        });
-
-        document.getElementById('watermark-gradient-start').addEventListener('input', (e) => {
-            sheetConfig.decoration.watermark.gradient.start = e.target.value;
-            renderPreview();
-        });
-
-        document.getElementById('watermark-gradient-end').addEventListener('input', (e) => {
-            sheetConfig.decoration.watermark.gradient.end = e.target.value;
-            renderPreview();
-        });
 
         // --- 워터마크 외곽선 ---
         document.getElementById('watermark-stroke-enable').addEventListener('change', (e) => {
@@ -2341,23 +2236,6 @@
             renderPreview();
         });
 
-        // --- 표정 이름 그라데이션 ---
-        document.getElementById('expr-gradient-enable').addEventListener('change', (e) => {
-            const enabled = e.target.checked;
-            sheetConfig.decoration.expressionLabels.gradient.enabled = enabled;
-            document.getElementById('expr-gradient-options').style.display = enabled ? 'flex' : 'none';
-            renderPreview();
-        });
-
-        document.getElementById('expr-gradient-start').addEventListener('input', (e) => {
-            sheetConfig.decoration.expressionLabels.gradient.start = e.target.value;
-            renderPreview();
-        });
-
-        document.getElementById('expr-gradient-end').addEventListener('input', (e) => {
-            sheetConfig.decoration.expressionLabels.gradient.end = e.target.value;
-            renderPreview();
-        });
 
         // --- 표정 이름 외곽선 ---
         document.getElementById('expr-stroke-enable').addEventListener('change', (e) => {
@@ -2744,23 +2622,12 @@
                         font-family: '${useFont}', Arial, sans-serif;
                         font-weight: ${nameStyle.fontWeight};
                         color: ${nameStyle.color};
-                        transform: rotate(${nameStyle.rotate}deg);
                         text-align: ${nameStyle.textAlign};
                         white-space: nowrap;
                         z-index: 100;
                     `;
 
-                    // 2. 그라데이션 적용
-                    if (nameStyle.gradient.enabled) {
-                        css += `
-                            background: linear-gradient(to right, ${nameStyle.gradient.start}, ${nameStyle.gradient.end});
-                            -webkit-background-clip: text;
-                            background-clip: text;
-                            color: transparent;
-                        `;
-                    }
-
-                    // 3. 외곽선 적용
+                    // 2. 외곽선 적용
                     if (nameStyle.stroke.enabled) {
                         css += `
                             -webkit-text-stroke-width: ${nameStyle.stroke.width}px;
@@ -2770,7 +2637,7 @@
                         `;
                     }
 
-                    // 4. 그림자 적용
+                    // 3. 그림자 적용
                     if (nameStyle.shadow.enabled) {
                         css += `
                             text-shadow: ${nameStyle.shadow.x}px ${nameStyle.shadow.y}px ${nameStyle.shadow.blur}px ${nameStyle.shadow.color};
@@ -2829,22 +2696,11 @@
                         font-family: '${globalFont}', Arial, sans-serif;
                         font-weight: ${wmStyle.fontWeight};
                         color: ${wmStyle.color};
-                        transform: rotate(${wmStyle.rotate}deg);
                         z-index: 100;
                         white-space: nowrap;
                     `;
 
-                    // 2. 그라데이션 적용
-                    if (wmStyle.gradient.enabled) {
-                        css += `
-                            background: linear-gradient(to right, ${wmStyle.gradient.start}, ${wmStyle.gradient.end});
-                            -webkit-background-clip: text;
-                            background-clip: text;
-                            color: transparent;
-                        `;
-                    }
-
-                    // 3. 외곽선 적용
+                    // 2. 외곽선 적용
                     if (wmStyle.stroke.enabled) {
                         css += `
                             -webkit-text-stroke-width: ${wmStyle.stroke.width}px;
@@ -2854,7 +2710,7 @@
                         `;
                     }
 
-                    // 4. 그림자 적용
+                    // 3. 그림자 적용
                     if (wmStyle.shadow.enabled) {
                         css += `
                             text-shadow: ${wmStyle.shadow.x}px ${wmStyle.shadow.y}px ${wmStyle.shadow.blur}px ${wmStyle.shadow.color};
@@ -2942,17 +2798,7 @@
                                 z-index: 101;
                             `;
 
-                            // 2. 그라데이션 적용
-                            if (exprStyle.gradient.enabled) {
-                                css += `
-                                    background: linear-gradient(to right, ${exprStyle.gradient.start}, ${exprStyle.gradient.end});
-                                    -webkit-background-clip: text;
-                                    background-clip: text;
-                                    color: transparent;
-                                `;
-                            }
-
-                            // 3. 외곽선 적용
+                            // 2. 외곽선 적용
                             if (exprStyle.stroke.enabled) {
                                 css += `
                                     -webkit-text-stroke-width: ${exprStyle.stroke.width}px;
@@ -2962,7 +2808,7 @@
                                 `;
                             }
 
-                            // 4. 그림자 적용
+                            // 3. 그림자 적용
                             if (exprStyle.shadow.enabled) {
                                 css += `
                                     text-shadow: ${exprStyle.shadow.x}px ${exprStyle.shadow.y}px ${exprStyle.shadow.blur}px ${exprStyle.shadow.color};
@@ -3041,9 +2887,10 @@
             const originalBackgroundImage = target.style.backgroundImage;
             const originalBackground = target.style.background;
             const originalBorder = target.style.border;
+            const originalBoxShadow = target.style.boxShadow;
             const originalTransform = target.style.transform;
 
-            // 텍스트 그라데이션 요소들의 원본 스타일 저장
+            // 텍스트 요소들의 원본 스타일 저장
             const textElements = target.querySelectorAll('.decoration-element');
             const originalStyles = [];
             textElements.forEach(el => {
@@ -3056,66 +2903,64 @@
                 });
             });
 
-            // 다운로드 전에 스케일 제거 및 테두리 제거
+            // 다운로드 전에 스케일, 테두리, 그림자 제거
             target.style.transform = 'none';
             target.style.border = 'none';
+            target.style.boxShadow = 'none';
 
-            // 텍스트 그라데이션을 일반 색상으로 임시 변경 (html2canvas 호환성)
-            textElements.forEach(el => {
-                // 캐릭터 이름 그라데이션 처리
-                if (el.classList.contains('character-name') && sheetConfig.decoration.characterName.gradient.enabled) {
-                    el.style.background = 'none';
-                    el.style.webkitBackgroundClip = 'unset';
-                    el.style.backgroundClip = 'unset';
-                    el.style.color = sheetConfig.decoration.characterName.gradient.start; // 시작 색상 사용
-                }
-                // 워터마크 그라데이션 처리
-                if (el.classList.contains('watermark') && sheetConfig.decoration.watermark.gradient.enabled) {
-                    el.style.background = 'none';
-                    el.style.webkitBackgroundClip = 'unset';
-                    el.style.backgroundClip = 'unset';
-                    el.style.color = sheetConfig.decoration.watermark.gradient.start;
-                }
-                // 표정 이름 그라데이션 처리
-                if (el.classList.contains('expression-label') && sheetConfig.decoration.expressionLabels.gradient.enabled) {
-                    el.style.background = 'none';
-                    el.style.webkitBackgroundClip = 'unset';
-                    el.style.backgroundClip = 'unset';
-                    el.style.color = sheetConfig.decoration.expressionLabels.gradient.start;
-                }
-            });
+            // 배경 설정 (디버깅 로그 추가)
+            console.log('=== 다운로드 배경 설정 시작 ===');
+            console.log('decoration.enabled:', sheetConfig.decoration.enabled);
 
-            // 배경 설정
+            // 먼저 배경 이미지 컨테이너 숨기기
+            const bgImgContainer = document.getElementById('bg-image-container');
+            if (bgImgContainer) {
+                bgImgContainer.style.display = 'none';
+            }
+
             if (sheetConfig.decoration.enabled) {
                 const bgType = sheetConfig.decoration.background.type;
+                console.log('배경 타입:', bgType);
+
                 if (bgType === 'transparent') {
+                    target.style.backgroundImage = 'none';
                     target.style.backgroundColor = 'transparent';
-                    target.style.backgroundImage = 'none';
-                    target.style.background = '';
                 } else if (bgType === 'color') {
+                    console.log('색상 타입:', sheetConfig.decoration.background.colorType);
                     if (sheetConfig.decoration.background.colorType === 'gradient') {
-                        target.style.background = `linear-gradient(to bottom, ${sheetConfig.decoration.background.colorGradientStart}, ${sheetConfig.decoration.background.colorGradientEnd})`;
-                        target.style.backgroundColor = '';
+                        const gradientCSS = `linear-gradient(to bottom, ${sheetConfig.decoration.background.colorGradientStart}, ${sheetConfig.decoration.background.colorGradientEnd})`;
+                        console.log('그라데이션 CSS:', gradientCSS);
+                        // backgroundImage를 그라데이션으로 설정
+                        target.style.backgroundImage = gradientCSS;
+                        target.style.backgroundColor = 'transparent';
                     } else {
+                        console.log('단색 배경:', sheetConfig.decoration.background.color);
+                        target.style.backgroundImage = 'none';
                         target.style.backgroundColor = sheetConfig.decoration.background.color;
-                        target.style.background = '';
                     }
-                    target.style.backgroundImage = 'none';
                 } else if (bgType === 'image' && sheetConfig.decoration.background.imageUrl) {
+                    console.log('이미지 배경 베이스 타입:', sheetConfig.decoration.background.baseType);
                     if (sheetConfig.decoration.background.baseType === 'gradient') {
-                        target.style.background = `linear-gradient(to bottom, ${sheetConfig.decoration.background.gradientStart}, ${sheetConfig.decoration.background.gradientEnd})`;
-                        target.style.backgroundColor = '';
+                        const gradientCSS = `linear-gradient(to bottom, ${sheetConfig.decoration.background.gradientStart}, ${sheetConfig.decoration.background.gradientEnd})`;
+                        console.log('이미지 배경용 그라데이션 CSS:', gradientCSS);
+                        target.style.backgroundImage = gradientCSS;
+                        target.style.backgroundColor = 'transparent';
                     } else {
+                        console.log('이미지 배경용 단색:', sheetConfig.decoration.background.baseColor);
+                        target.style.backgroundImage = 'none';
                         target.style.backgroundColor = sheetConfig.decoration.background.baseColor;
-                        target.style.background = '';
                     }
-                    target.style.backgroundImage = 'none';
                 }
             } else {
-                target.style.backgroundColor = 'white';
                 target.style.backgroundImage = 'none';
-                target.style.background = '';
+                target.style.backgroundColor = 'white';
             }
+
+            console.log('최종 backgroundColor:', target.style.backgroundColor);
+            console.log('최종 backgroundImage:', target.style.backgroundImage);
+            console.log('computed backgroundColor:', window.getComputedStyle(target).backgroundColor);
+            console.log('computed backgroundImage:', window.getComputedStyle(target).backgroundImage);
+            console.log('=== 다운로드 배경 설정 완료 ===');
 
             html2canvas(target, {
                 backgroundColor: null,
@@ -3132,6 +2977,7 @@
                 target.style.background = originalBackground;
                 target.style.transform = originalTransform;
                 target.style.border = originalBorder;
+                target.style.boxShadow = originalBoxShadow;
 
                 // 텍스트 요소들 원본 스타일 복원
                 originalStyles.forEach(item => {
@@ -3159,6 +3005,7 @@
                 target.style.background = originalBackground;
                 target.style.transform = originalTransform;
                 target.style.border = originalBorder;
+                target.style.boxShadow = originalBoxShadow;
 
                 originalStyles.forEach(item => {
                     item.element.style.background = item.background;
@@ -3171,10 +3018,13 @@
 
         // --- 초기 렌더링 ---
         // 기본 폰트 로드 (첫 번째 폰트 기본값)
-        const defaultFont = document.getElementById('font-list').value;
-        if (fonts[defaultFont]) {
-            loadFont(fonts[defaultFont]);
-            sheetConfig.decoration.characterName.fontFamily = defaultFont;
+        const defaultFontElement = document.getElementById('global-font-list');
+        if (defaultFontElement) {
+            const defaultFont = defaultFontElement.value;
+            if (fonts[defaultFont]) {
+                loadGlobalFont(fonts[defaultFont]);
+                sheetConfig.decoration.globalFont.fontFamily = defaultFont;
+            }
         }
 
         renderPreview();
@@ -3189,8 +3039,10 @@
         
         // (v8) 새로 추가된 슬라이더들도 초기화
         const decorationSliders = [
-            'name-rotate', 'name-stroke-width', Models,
-            'name-shadow-x', 'name-shadow-y', 'name-shadow-blur'
+            'name-stroke-width',
+            'name-shadow-x', 'name-shadow-y', 'name-shadow-blur',
+            'watermark-stroke-width',
+            'watermark-shadow-x', 'watermark-shadow-y', 'watermark-shadow-blur'
         ];
         decorationSliders.forEach(id => {
             const numberInput = document.getElementById(id);
@@ -3202,16 +3054,12 @@
             }
         });
         // (v8) 토글 상태에 따라 옵션 패널 초기화
-        document.getElementById('name-gradient-options').style.display =
-            document.getElementById('name-gradient-enable').checked ? 'flex' : 'none';
         document.getElementById('name-stroke-options').style.display =
             document.getElementById('name-stroke-enable').checked ? 'block' : 'none';
         document.getElementById('name-shadow-options').style.display =
             document.getElementById('name-shadow-enable').checked ? 'block' : 'none';
 
         // 워터마크 토글 초기화
-        document.getElementById('watermark-gradient-options').style.display =
-            document.getElementById('watermark-gradient-enable').checked ? 'flex' : 'none';
         document.getElementById('watermark-stroke-options').style.display =
             document.getElementById('watermark-stroke-enable').checked ? 'block' : 'none';
         document.getElementById('watermark-shadow-options').style.display =
@@ -3220,8 +3068,6 @@
         // 표정 이름 토글 초기화
         document.getElementById('expression-labels-settings').style.display =
             document.getElementById('enable-expression-labels').checked ? 'block' : 'none';
-        document.getElementById('expr-gradient-options').style.display =
-            document.getElementById('expr-gradient-enable').checked ? 'flex' : 'none';
         document.getElementById('expr-stroke-options').style.display =
             document.getElementById('expr-stroke-enable').checked ? 'block' : 'none';
         document.getElementById('expr-shadow-options').style.display =
